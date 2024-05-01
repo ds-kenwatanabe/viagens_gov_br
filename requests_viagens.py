@@ -5,25 +5,31 @@ import psycopg2
 url = 'https://api.portaldatransparencia.gov.br/api-de-dados/viagens'
 
 # As datas possuem um período máximo de 1 mês
+
+# Algunns códigos SIAFI:
+# 35000 - Ministério Relações Exteriores
+# 36000 - Ministério da Saúde
+# 20000 - Presidência da República
+
 params = {
-    'dataIdaDe': '01/06/2023',
-    'dataIdaAte': '30/06/2023',
-    'dataRetornoDe': '01/06/2023',
-    'dataRetornoAte': '30/06/2023',
-    'codigoOrgao': '35000',  # Código SIAFI Ministério Relações Exteriores
+    'dataIdaDe': '01/01/2023',
+    'dataIdaAte': '31/01/2023',
+    'dataRetornoDe': '01/01/2023',
+    'dataRetornoAte': '31/01/2023',
+    'codigoOrgao': '35000',
     'pagina': '0'
 }
 
 # Chave de API
 headers = {
     'accept': '*/*',
-    'chave-api-dados': 'CHAVE_API'  # Substitua 'CHAVE_API' pela sua chave de API
+    'chave-api-dados': 'CHAVE_AQUI'  # Substitua 'CHAVE_API' pela sua chave de API
 }
 
 # Incializar página
 num_pg = 0
 # Limite máximo de requisições
-contador_request = 90
+contador_request = 100000
 while contador_request > 0:
     params['pagina'] = str(num_pg + 1)
 
@@ -35,17 +41,17 @@ while contador_request > 0:
         data = response.json()  # Converte a resposta para JSON
 
         if not data:  # Se a resposta estiver vazia, pare o loop
-            print(f"Nenhuma página retornou dados. Encerrando consulta.")
+            print(f"A página não retornou dados. Encerrando a consulta.")
             break
         
         # Conecte ao banco de dados PostgreSQL
         # Substitua com os do seu banco de dados
         conn = psycopg2.connect(
-            dbname='database',
-            user='usuario',
-            password='senha',
-            host='host',
-            port='port'
+            dbname='viagens',
+            user='postgres',
+            password='postgres',
+            host='localhost',
+            port='5432'
         )
 
         cursor = conn.cursor()
@@ -198,7 +204,7 @@ while contador_request > 0:
             
             contador_request -= 1  # Reduz o contador de requisições
             if contador_request == 0:
-                print("Número máximo de requisições da API atingidos (90 requisições).")
+                print("Número máximo de requisições da API atingidos.")
                 break
 
     num_pg += 1

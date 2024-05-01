@@ -1,0 +1,1 @@
+SELECT * FROM viagens WHERE orgao_codigo_siafi =  '20000' ORDER BY valor_total_viagem DESC;
