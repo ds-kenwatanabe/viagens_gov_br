@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 
 class ViagensAPI:
     def __init__(self, url, headers, params):
-        # Substitua com os do seu banco de dados e chave API
-        # no arquivo .env
+        # Substitua com os parâmetros do seu banco de dados 
+        # e chave API no arquivo .env criado
         load_dotenv()  # Carregar as variáveis de ambiente do arquivo .env
         self.db_name = os.getenv('DB_NAME')
         self.db_user = os.getenv('DB_USER')
@@ -55,18 +55,6 @@ class ViagensAPI:
                 if not data:  # Se a resposta estiver vazia, pare o loop
                     print(f"A página não retornou dados. Encerrando a consulta.")
                     break
-                
-                # Conecte ao banco de dados PostgreSQL
-                # Substitua com os do seu banco de dados
-                conn = psycopg2.connect(
-                    dbname='viagens',
-                    user='postgres',
-                    password='postgres',
-                    host='localhost',
-                    port='5432'
-                )
-
-                cursor = conn.cursor()
 
                 # Crie uma tabela no banco de dados para armazenar os resultados das viagens
                 cursor.execute('''CREATE TABLE IF NOT EXISTS viagens (
