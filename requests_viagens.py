@@ -222,18 +222,19 @@ if __name__ == "__main__":
             'chave-api-dados': os.getenv('API_KEY')
         }
     
-    # As datas possuem um período máximo de 1 mês
+    # As datas possuem um período máximo de 1 mês!
     # Alguns códigos SIAFI:
+    # 20000 - Presidência da República
+    # 26000 - Ministério da Educação
     # 35000 - Ministério Relações Exteriores
     # 36000 - Ministério da Saúde
-    # 20000 - Presidência da República
-
+    
     params = {
             'dataIdaDe': '01/01/2023',
             'dataIdaAte': '31/01/2023',
             'dataRetornoDe': '01/01/2023',
             'dataRetornoAte': '31/01/2023',
-            'codigoOrgao': '35000',
+            'codigoOrgao': '20000',
             'pagina': '0'
         }
     
