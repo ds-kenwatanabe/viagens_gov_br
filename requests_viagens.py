@@ -225,9 +225,14 @@ if __name__ == "__main__":
     # As datas possuem um período máximo de 1 mês!
     # Alguns códigos SIAFI:
     # 20000 - Presidência da República
+    # 22000 - Ministério da Agricultura e Pecuária
     # 26000 - Ministério da Educação
-    # 35000 - Ministério Relações Exteriores
+    # 32000 - Ministério de Minas e Energia
+    # 35000 - Ministério das Relações Exteriores
     # 36000 - Ministério da Saúde
+    # 39000 - Ministério da Infraestrutura
+    # 44000 - Ministério do Meio Ambiente
+    # 54000 - Ministério do Turismo
     
     params = {
             'dataIdaDe': '01/01/2023',
