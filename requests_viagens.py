@@ -230,8 +230,9 @@ if __name__ == "__main__":
     # 32000 - Ministério de Minas e Energia
     # 35000 - Ministério das Relações Exteriores
     # 36000 - Ministério da Saúde
-    # 39000 - Ministério da Infraestrutura
+    # 39000 - Ministério dos Transportes
     # 44000 - Ministério do Meio Ambiente
+    # 52000 - Ministério da Defesa
     # 54000 - Ministério do Turismo
     
     params = {
