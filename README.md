@@ -39,8 +39,14 @@ O SIAFI é utilizado para registro da execução orçamentária, financeira, pat
   *  52000 - Ministério da Defesa
   *  54000 - Ministério do Turismo
 <br />
-⚠️ Alguns códigos consultados não estavam disponíveis, por isso foram utilizados estes ministérios.
+⚠️ Alguns códigos consultados não estavam disponíveis, por isso foram utilizados estes órgão do governo.
 <br />
+
+## Instalação do repositório
+Clone o repositório em sua máquina
+```
+git clone https://github.com/ds-kenwatanabe/viagens_gov_br.git
+```
 
 <a name="arquivo-env"></a>
 ## Gerando um arquivo .env
