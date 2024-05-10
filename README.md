@@ -4,7 +4,7 @@
 Este é um projeto que utiliza da API do [Portal da Transparência](https://portaldatransparencia.gov.br) para acessar dados de viagens feitas por funcionários do governo brasileiro e inseri-los em uma base de dados PostgreSQL.
 <br />
 <br />
-Os dados que foram utilizados neste projeto correspondem aos dados de viagens de funcionários do Ministério das Relações Exteriores, Ministério da Saúde, Ministério da Educação e Presidência da República, durante o período de 01/01/2023 até 30/04/2024. Um total de 104239 dados foram coletados.
+Os dados que foram utilizados neste projeto correspondem aos dados de viagens de funcionários do Ministério das Relações Exteriores, Ministério da Saúde, Ministério da Educação e Presidência da República, durante o período de 01/01/2023 até 30/04/2024. Um total de 104.239 dados foram coletados.
 <br />
 <br />
 Para coletar os dados, é necessário o código do Sistema Integrado de Administração Financeira (SIAFI), não foi possível coletar dados de alguns códigos de ministérios, por isso foram selecionados os ministérios mencionados. Os códigos estão descritos na seção de [Dados Importantes](#dados-importantes). Caso queira, você pode procurar outros códigos SIAFI para montar seu banco de dados.  
@@ -73,5 +73,15 @@ DB_PORT=5432
 Esta configuração será utilizada no arquivo [requests_viagens.py](requests_viagens.py).
 
 ## Relatório Power BI
+A seguir você verá algumas images do relatório dos gastos das viagens. Três páginas principais foram feitas, a primeira demonstra os dez principais beneficiários, aqueles que tiveram os maiores valores de viagens, gastos por ministério, número de viagens, gasto médio (com mínimo e máximo) e datas de início do afastamento. A segunda página mostra os cem principais beneficiários, assim como os motivos e justificativa de urgência da viagem. Por fim, uma página com histogramas p=or ministérios, valores médios e desvio padrão.
+
+#### Top 10 Beneficiários
+
+#### Top 100 Beneficiários
+
+#### Histograma
 
 ## Conclusão
+Este projeto teve como objetivo demonstrar como acessar a API de dados do Portal da Transparência para coletar dados de viagens e inserí-los em uma base de dados PostgreSQL. Durante o período coletado, entre nove órgão federais, foram realizadas 104.239 viagens e um custo total de aproximadamente 315 milhões de reais e valor médio por viagem de 3 mil reais.
+<br />
+O projeto também pode servir como base para buscar outros dados, além de gastos de viagens. Acesse o Portal da Transparência e a API de dados para tirar novos insights!
