@@ -75,11 +75,47 @@ Esta configuração será utilizada no arquivo [requests_viagens.py](requests_vi
 ## Relatório Power BI
 A seguir você verá algumas images do relatório dos gastos das viagens. Três páginas principais foram feitas, a primeira demonstra os dez principais beneficiários, aqueles que tiveram os maiores valores de viagens, gastos por ministério, número de viagens, gasto médio (com mínimo e máximo) e datas de início do afastamento. A segunda página mostra os cem principais beneficiários, assim como os motivos e justificativa de urgência da viagem. Por fim, uma página com histogramas p=or ministérios, valores médios e desvio padrão.
 
+#### Tela de início
+Aqui você pode visualizar o total de viagens, órgão consultados e três botões para seguir para as diferentes páginas.
+![inicio](pbi_images/inicio.png)
+
 #### Top 10 Beneficiários
+Nesta página você pode visualizar os Top 10 beneficiários (com imagens), quantidade de viagens, média do valor da viagem (com valor mínimo e máximo), total de gastos por órgão e datas do início do afastamento.
+![top10_1](pbi_images/top10_1.png)
+
+Também é possível visualizar a porcetagem de viajens que foram internacionais ou nacionais ao colocar a seta do mouse sobre o órgão.
+![top10_2](pbi_images/top10_2.png)
+
+As mesmas informações aparecem caso selecione somente um dos beneficiários. Para mostrar o tipo de viagem, basta colocar o mouse sobre o valor da viagem do beneficiário no gráfico "Valor da Viagem por Beneficiário".
+![top10_3](pbi_images/top10_3.png)
+
+Por fim, é possível selecionar mais que um beneficiário e comparar os gasto de viagens individuais e o valor total e médio de gastos para os indivíduos selecionados.
+![top10_4](pbi_images/top10_4.png)
 
 #### Top 100 Beneficiários
+Nesta página é possível selecionar os Top 100 maiores beneficiários, os motivos dos gastos, valores e justificativa de urgência. 
+<br />
+⚠️ Detalhe: o valor total da viagem apontado no cartão é o valor total de todas as viagens, caso selecione um ou mais indivíduos, o cartão é atualizado para mostrar o valor do(s) indivíduos. Caso selecione o órgão ou ano, irá mostrar o valor total de todas as viagens do órgão ou ano.
+![top100_1](pbi_images/top100_1.png)
+
+Você pode selecionar um indivíduo e investigar os motivos dos gastos e visualizar o valor total de todas as viagens.
+![top100_2](pbi_images/top100_2.png)
+Visualizar a justificativa de urgência para as viagens.
+![top100_3](pbi_images/top100_3.png)
+E visualizar os valores dos gastos.
+![top100_4](pbi_images/top100_4.png)
+
+Por fim, é possível selecionar mais que um indivíduo.
+![top100_5](pbi_images/top100_5.png)
+Ou selecionar o órgão
+![top100_6](pbi_images/top100_6.png)
 
 #### Histograma
+O histograma mostra a distribuição da frequência dos gastos por órgão, média e desvio padrão. Foram organizados em compartimentos de R$2.054,65.
+![hist_1](pbi_images/hist_1.png)
+
+Distrubuiçao de três órgãos.
+![hist_2](pbi_images/hist_2.png)
 
 ## Conclusão
 Este projeto teve como objetivo demonstrar como acessar a API de dados do Portal da Transparência para coletar dados de viagens e inserí-los em uma base de dados PostgreSQL. Durante o período coletado, entre nove órgão federais, foram realizadas 104.239 viagens e um custo total de aproximadamente 315 milhões de reais e valor médio por viagem de 3 mil reais.
