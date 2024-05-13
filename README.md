@@ -1,13 +1,13 @@
-# Dados de viagens do Governo Brasileiro
+# Dados de Viagens do Governo Brasileiro ✈️
 
 ## Introdução
 Este é um projeto que utiliza da API do [Portal da Transparência](https://portaldatransparencia.gov.br) para acessar dados de viagens feitas por funcionários do governo brasileiro e inseri-los em uma base de dados PostgreSQL.
 <br />
 <br />
-Os dados que foram utilizados neste projeto correspondem aos dados de viagens de funcionários do Ministério das Relações Exteriores, Ministério da Saúde, Ministério da Educação e Presidência da República, durante o período de 01/01/2023 até 30/04/2024. Um total de 104.239 dados foram coletados.
+Os dados que foram utilizados neste projeto correspondem aos dados de viagens de funcionários de dez órgão do governo, coletados durante o período de 01/01/2023 até 30/04/2024. Um total de 104.239 dados foram coletados.
 <br />
 <br />
-Para coletar os dados, é necessário o código do Sistema Integrado de Administração Financeira (SIAFI), não foi possível coletar dados de alguns códigos de ministérios, por isso foram selecionados os ministérios mencionados. Os códigos estão descritos na seção de [Dados Importantes](#dados-importantes). Caso queira, você pode procurar outros códigos SIAFI para montar seu banco de dados.  
+Para coletar os dados é necessário o código do Sistema Integrado de Administração Financeira (SIAFI), que identifica o órgão a ser consultado. Não foi possível coletar dados de alguns códigos de órgãos, aqueles selecionados foram estão descritos na seção de [Dados Importantes](#dados-importantes). Caso queira, você pode procurar outros códigos SIAFI para montar seu banco de dados.  
 
 ### Sobre o Portal da Transparência e a API de dados
 
@@ -39,8 +39,14 @@ O SIAFI é utilizado para registro da execução orçamentária, financeira, pat
   *  52000 - Ministério da Defesa
   *  54000 - Ministério do Turismo
 <br />
-⚠️ Alguns códigos consultados não estavam disponíveis, por isso foram utilizados estes ministérios.
+⚠️ Alguns códigos consultados não estavam disponíveis, por isso foram utilizados estes órgão do governo.
 <br />
+
+## Instalação do repositório
+Clone o repositório em sua máquina
+```
+git clone https://github.com/ds-kenwatanabe/viagens_gov_br.git
+```
 
 <a name="arquivo-env"></a>
 ## Gerando um arquivo .env
@@ -120,4 +126,4 @@ Distrubuiçao de três órgãos.
 ## Conclusão
 Este projeto teve como objetivo demonstrar como acessar a API de dados do Portal da Transparência para coletar dados de viagens e inserí-los em uma base de dados PostgreSQL. Durante o período coletado, entre nove órgão federais, foram realizadas 104.239 viagens e um custo total de aproximadamente 315 milhões de reais e valor médio por viagem de 3 mil reais.
 <br />
-O projeto também pode servir como base para buscar outros dados, além de gastos de viagens. Acesse o Portal da Transparência e a API de dados para tirar novos insights!
+O projeto também pode servir como base para buscar outros dados, além de gastos de viagens. Acesse o Portal da Transparência e a API de dados para gerar novos insights!
