@@ -4,10 +4,10 @@
 Este é um projeto que utiliza da API do [Portal da Transparência](https://portaldatransparencia.gov.br) para acessar dados de viagens feitas por funcionários do governo brasileiro e inseri-los em uma base de dados PostgreSQL.
 <br />
 <br />
-Os dados que foram utilizados neste projeto correspondem aos dados de viagens de funcionários do Ministério das Relações Exteriores, Ministério da Saúde, Ministério da Educação e Presidência da República, durante o período de 01/01/2023 até 30/04/2024. Um total de 104.239 dados foram coletados.
+Os dados que foram utilizados neste projeto correspondem aos dados de viagens de funcionários de dez órgão do governo, coletados durante o período de 01/01/2023 até 30/04/2024. Um total de 104.239 dados foram coletados.
 <br />
 <br />
-Para coletar os dados, é necessário o código do Sistema Integrado de Administração Financeira (SIAFI), não foi possível coletar dados de alguns códigos de ministérios, por isso foram selecionados os ministérios mencionados. Os códigos estão descritos na seção de [Dados Importantes](#dados-importantes). Caso queira, você pode procurar outros códigos SIAFI para montar seu banco de dados.  
+Para coletar os dados é necessário o código do Sistema Integrado de Administração Financeira (SIAFI), que identifica o órgão a ser consultado. Não foi possível coletar dados de alguns códigos de órgãos, aqueles selecionados foram estão descritos na seção de [Dados Importantes](#dados-importantes). Caso queira, você pode procurar outros códigos SIAFI para montar seu banco de dados.  
 
 ### Sobre o Portal da Transparência e a API de dados
 
