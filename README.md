@@ -38,15 +38,21 @@ pip install -r requirements.txt
 Crie um arquivo `.env` na raiz do projeto usando `.env.example` como referência:
 
 ```env
-API_KEY=abc123xyz456
-DB_NAME=database
-DB_USER=usuario
-DB_PASSWORD=senha
+API_KEY=
+DB_NAME=
+DB_USER=
+DB_PASSWORD=
 DB_HOST=localhost
 DB_PORT=5432
+API_TIMEOUT_SECONDS=30
+API_MAX_RETRIES=3
+API_BACKOFF_SECONDS=2
+API_PAGE_DELAY_SECONDS=1
 ```
 
 O arquivo `.env` não deve ser versionado, pois contém credenciais.
+
+As variáveis `API_TIMEOUT_SECONDS`, `API_MAX_RETRIES`, `API_BACKOFF_SECONDS` e `API_PAGE_DELAY_SECONDS` controlam timeout, tentativas, backoff e pausa entre páginas para respeitar limites temporários da API.
 
 ## Execução da ingestão
 

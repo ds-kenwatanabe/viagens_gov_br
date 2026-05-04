@@ -5,6 +5,10 @@ from dotenv import load_dotenv
 
 
 API_URL = "https://api.portaldatransparencia.gov.br/api-de-dados/viagens"
+API_TIMEOUT_SECONDS = 30
+API_MAX_RETRIES = 3
+API_BACKOFF_SECONDS = 2.0
+API_PAGE_DELAY_SECONDS = 1.0
 
 DEFAULT_PARAMS = {
     "dataIdaDe": "01/01/2023",
@@ -24,6 +28,10 @@ class Settings:
     db_password: str
     db_host: str
     db_port: str
+    api_timeout_seconds: float
+    api_max_retries: int
+    api_backoff_seconds: float
+    api_page_delay_seconds: float
 
 
 def load_settings() -> Settings:
@@ -50,6 +58,13 @@ def load_settings() -> Settings:
         db_password=required_vars["DB_PASSWORD"],
         db_host=required_vars["DB_HOST"],
         db_port=required_vars["DB_PORT"],
+        api_timeout_seconds=_get_float("API_TIMEOUT_SECONDS", API_TIMEOUT_SECONDS),
+        api_max_retries=_get_int("API_MAX_RETRIES", API_MAX_RETRIES),
+        api_backoff_seconds=_get_float("API_BACKOFF_SECONDS", API_BACKOFF_SECONDS),
+        api_page_delay_seconds=_get_float(
+            "API_PAGE_DELAY_SECONDS",
+            API_PAGE_DELAY_SECONDS,
+        ),
     )
 
 
@@ -58,3 +73,17 @@ def build_headers(api_key: str) -> dict[str, str]:
         "accept": "*/*",
         "chave-api-dados": api_key,
     }
+
+
+def _get_float(name: str, default: float) -> float:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return float(value)
+
+
+def _get_int(name: str, default: int) -> int:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return int(value)

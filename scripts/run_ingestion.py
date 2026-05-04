@@ -1,4 +1,5 @@
 from pathlib import Path
+import logging
 import sys
 
 
@@ -10,4 +11,8 @@ from src.ingest import ingest_viagens
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s - %(message)s",
+    )
     ingest_viagens()
