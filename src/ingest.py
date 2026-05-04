@@ -1,6 +1,8 @@
+import argparse
 from collections.abc import Callable
 from collections.abc import Mapping
 from contextlib import closing
+from datetime import datetime
 import logging
 import time
 
@@ -13,6 +15,25 @@ from src.database import connect_db, ensure_schema, insert_viagem
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
+
+
+def build_params(data_inicio: str, data_fim: str, orgao: str) -> dict[str, str]:
+    if _parse_iso_date(data_fim) < _parse_iso_date(data_inicio):
+        raise argparse.ArgumentTypeError(
+            "Data final deve ser maior ou igual a data inicial."
+        )
+
+    data_inicio_api = _format_api_date(data_inicio)
+    data_fim_api = _format_api_date(data_fim)
+
+    return {
+        "dataIdaDe": data_inicio_api,
+        "dataIdaAte": data_fim_api,
+        "dataRetornoDe": data_inicio_api,
+        "dataRetornoAte": data_fim_api,
+        "codigoOrgao": orgao,
+        "pagina": "1",
+    }
 
 
 def ingest_viagens(
@@ -113,3 +134,71 @@ def ingest_viagens(
         periodo_retorno,
     )
     return inserted_rows
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = _parse_args(argv)
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s - %(message)s",
+    )
+    params = build_params(args.data_inicio, args.data_fim, args.orgao)
+    ingest_viagens(params=params, max_requests=args.max_requests)
+    return 0
+
+
+def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Ingere dados de viagens do Portal da Transparencia.",
+    )
+    parser.add_argument(
+        "--data-inicio",
+        required=True,
+        type=_validate_iso_date,
+        help="Data inicial no formato YYYY-MM-DD.",
+    )
+    parser.add_argument(
+        "--data-fim",
+        required=True,
+        type=_validate_iso_date,
+        help="Data final no formato YYYY-MM-DD.",
+    )
+    parser.add_argument(
+        "--orgao",
+        required=True,
+        help="Codigo SIAFI do orgao consultado.",
+    )
+    parser.add_argument(
+        "--max-requests",
+        type=int,
+        default=100_000,
+        help="Quantidade maxima de registros processados nesta execucao.",
+    )
+    args = parser.parse_args(argv)
+    try:
+        build_params(args.data_inicio, args.data_fim, args.orgao)
+    except argparse.ArgumentTypeError as exc:
+        parser.error(str(exc))
+    return args
+
+
+def _validate_iso_date(value: str) -> str:
+    _format_api_date(value)
+    return value
+
+
+def _format_api_date(value: str) -> str:
+    return _parse_iso_date(value).strftime("%d/%m/%Y")
+
+
+def _parse_iso_date(value: str) -> datetime:
+    try:
+        return datetime.strptime(value, "%Y-%m-%d")
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(
+            f"Data invalida: {value}. Use o formato YYYY-MM-DD."
+        ) from exc
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

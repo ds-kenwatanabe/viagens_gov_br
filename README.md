@@ -59,10 +59,16 @@ As variáveis `API_TIMEOUT_SECONDS`, `API_MAX_RETRIES`, `API_BACKOFF_SECONDS` e 
 Execute:
 
 ```bash
-python scripts/run_ingestion.py
+python -m src.ingest --data-inicio 2023-01-01 --data-fim 2023-01-31 --orgao 20000
 ```
 
-Por padrão, a ingestão consulta as viagens de janeiro de 2023 para o órgão SIAFI `20000`. Os parâmetros padrão ficam em `src/config.py` e podem ser alterados conforme o período e o órgão desejados.
+As datas devem ser informadas no formato `YYYY-MM-DD`. O comando converte os valores para o formato usado pela API (`DD/MM/YYYY`) e usa o mesmo período para ida e retorno.
+
+Para limitar a quantidade de registros processados em uma execução, use:
+
+```bash
+python -m src.ingest --data-inicio 2023-01-01 --data-fim 2023-01-31 --orgao 20000 --max-requests 1000
+```
 
 A API de viagens trabalha com intervalos de datas limitados. Para coletas longas, rode a ingestão por janelas menores e ajuste os parâmetros entre execuções.
 

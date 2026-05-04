@@ -1,5 +1,4 @@
 from pathlib import Path
-import logging
 import sys
 
 
@@ -7,12 +6,8 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from src.ingest import ingest_viagens
+from src.ingest import main
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s %(levelname)s %(name)s - %(message)s",
-    )
-    ingest_viagens()
+    raise SystemExit(main())
