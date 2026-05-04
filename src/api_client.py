@@ -17,6 +17,9 @@ class ViagensAPIClient:
         self.session = session or requests.Session()
 
     def fetch_page(self, params: Mapping[str, str], page: int) -> list[dict]:
+        if page < 1:
+            raise ValueError("Page must be greater than or equal to 1")
+
         page_params = dict(params)
         page_params["pagina"] = str(page)
 
