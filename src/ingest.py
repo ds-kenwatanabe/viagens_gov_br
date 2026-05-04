@@ -6,6 +6,7 @@ from datetime import date
 from datetime import datetime
 from datetime import timedelta
 import logging
+import sys
 import time
 
 from requests import RequestException
@@ -207,6 +208,7 @@ def main(argv: list[str] | None = None) -> int:
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s - %(message)s",
+        stream=sys.stdout,
     )
     orgaos = parse_orgaos(args.orgao, args.orgaos)
     windows = build_monthly_windows(args.data_inicio, args.data_fim)
