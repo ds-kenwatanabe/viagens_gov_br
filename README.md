@@ -62,7 +62,13 @@ Execute:
 python -m src.ingest --data-inicio 2023-01-01 --data-fim 2023-01-31 --orgao 20000
 ```
 
-As datas devem ser informadas no formato `YYYY-MM-DD`. O comando converte os valores para o formato usado pela API (`DD/MM/YYYY`) e usa o mesmo período para ida e retorno.
+As datas devem ser informadas no formato `YYYY-MM-DD`. O comando converte os valores para o formato usado pela API (`DD/MM/YYYY`), usa o mesmo período para ida e retorno e divide períodos longos em janelas mensais.
+
+Para consultar vários órgãos no mesmo período, use códigos SIAFI separados por vírgula:
+
+```bash
+python -m src.ingest --data-inicio 2024-05-01 --data-fim 2026-04-30 --orgaos 20000,22000,26000
+```
 
 Para limitar a quantidade de registros processados em uma execução, use:
 

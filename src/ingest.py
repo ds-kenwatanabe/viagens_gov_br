@@ -2,7 +2,9 @@ import argparse
 from collections.abc import Callable
 from collections.abc import Mapping
 from contextlib import closing
+from datetime import date
 from datetime import datetime
+from datetime import timedelta
 import logging
 import time
 
@@ -34,6 +36,38 @@ def build_params(data_inicio: str, data_fim: str, orgao: str) -> dict[str, str]:
         "codigoOrgao": orgao,
         "pagina": "1",
     }
+
+
+def build_monthly_windows(data_inicio: str, data_fim: str) -> list[tuple[str, str]]:
+    start_date = _parse_iso_date(data_inicio).date()
+    end_date = _parse_iso_date(data_fim).date()
+
+    if end_date < start_date:
+        raise argparse.ArgumentTypeError(
+            "Data final deve ser maior ou igual a data inicial."
+        )
+
+    windows = []
+    current_start = start_date
+    while current_start <= end_date:
+        current_end = min(_last_day_of_month(current_start), end_date)
+        windows.append((current_start.isoformat(), current_end.isoformat()))
+        current_start = current_end + timedelta(days=1)
+
+    return windows
+
+
+def parse_orgaos(orgao: str | None, orgaos: str | None) -> list[str]:
+    selected_orgaos = []
+    if orgao:
+        selected_orgaos.append(orgao)
+    if orgaos:
+        selected_orgaos.extend(item.strip() for item in orgaos.split(",") if item.strip())
+
+    if not selected_orgaos:
+        raise argparse.ArgumentTypeError("Informe --orgao ou --orgaos.")
+
+    return list(dict.fromkeys(selected_orgaos))
 
 
 def ingest_viagens(
@@ -136,14 +170,47 @@ def ingest_viagens(
     return inserted_rows
 
 
+def ingest_windows(
+    orgaos: list[str],
+    windows: list[tuple[str, str]],
+    max_requests: int = 100_000,
+    sleep_func: Callable[[float], None] = time.sleep,
+) -> int:
+    total_inserted_rows = 0
+    total_windows = len(orgaos) * len(windows)
+    current_window = 1
+
+    for orgao in orgaos:
+        for data_inicio, data_fim in windows:
+            LOGGER.info(
+                "Iniciando janela %s/%s orgao=%s data_inicio=%s data_fim=%s",
+                current_window,
+                total_windows,
+                orgao,
+                data_inicio,
+                data_fim,
+            )
+            params = build_params(data_inicio, data_fim, orgao)
+            total_inserted_rows += ingest_viagens(
+                params=params,
+                max_requests=max_requests,
+                sleep_func=sleep_func,
+            )
+            current_window += 1
+
+    LOGGER.info("Lote finalizado. Total de registros inseridos=%s", total_inserted_rows)
+    return total_inserted_rows
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s - %(message)s",
     )
-    params = build_params(args.data_inicio, args.data_fim, args.orgao)
-    ingest_viagens(params=params, max_requests=args.max_requests)
+    orgaos = parse_orgaos(args.orgao, args.orgaos)
+    windows = build_monthly_windows(args.data_inicio, args.data_fim)
+    ingest_windows(orgaos=orgaos, windows=windows, max_requests=args.max_requests)
     return 0
 
 
@@ -165,8 +232,13 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--orgao",
-        required=True,
+        required=False,
         help="Codigo SIAFI do orgao consultado.",
+    )
+    parser.add_argument(
+        "--orgaos",
+        required=False,
+        help="Codigos SIAFI separados por virgula para consulta em lote.",
     )
     parser.add_argument(
         "--max-requests",
@@ -176,7 +248,8 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     args = parser.parse_args(argv)
     try:
-        build_params(args.data_inicio, args.data_fim, args.orgao)
+        parse_orgaos(args.orgao, args.orgaos)
+        build_monthly_windows(args.data_inicio, args.data_fim)
     except argparse.ArgumentTypeError as exc:
         parser.error(str(exc))
     return args
@@ -198,6 +271,14 @@ def _parse_iso_date(value: str) -> datetime:
         raise argparse.ArgumentTypeError(
             f"Data invalida: {value}. Use o formato YYYY-MM-DD."
         ) from exc
+
+
+def _last_day_of_month(value: date) -> date:
+    if value.month == 12:
+        next_month = date(value.year + 1, 1, 1)
+    else:
+        next_month = date(value.year, value.month + 1, 1)
+    return next_month - timedelta(days=1)
 
 
 if __name__ == "__main__":
