@@ -1,8 +1,11 @@
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 
-import psycopg2
-from psycopg2.extensions import connection
+if TYPE_CHECKING:
+    from psycopg2.extensions import connection
+else:
+    connection = Any
 
 from src.config import Settings
 
@@ -11,6 +14,8 @@ SCHEMA_PATH = Path(__file__).with_name("schema.sql")
 
 
 def connect_db(settings: Settings) -> connection:
+    import psycopg2
+
     return psycopg2.connect(
         dbname=settings.db_name,
         user=settings.db_user,
@@ -26,13 +31,7 @@ def ensure_schema(conn: connection) -> None:
     conn.commit()
 
 
-def viagem_exists(conn: connection, viagem_id: int) -> bool:
-    with conn.cursor() as cursor:
-        cursor.execute("SELECT EXISTS(SELECT 1 FROM viagens WHERE id = %s)", (viagem_id,))
-        return bool(cursor.fetchone()[0])
-
-
-def insert_viagem(conn: connection, item: dict[str, Any]) -> None:
+def insert_viagem(conn: connection, item: dict[str, Any]) -> bool:
     with conn.cursor() as cursor:
         cursor.execute(
             """
@@ -80,9 +79,12 @@ def insert_viagem(conn: connection, item: dict[str, Any]) -> None:
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                 %s, %s, %s, %s, %s, %s, %s
             )
+            ON CONFLICT (id) DO NOTHING
+            RETURNING id
             """,
             _viagem_values(item),
         )
+        return cursor.fetchone() is not None
 
 
 def _viagem_values(item: dict[str, Any]) -> tuple[Any, ...]:

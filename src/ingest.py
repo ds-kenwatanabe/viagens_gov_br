@@ -8,7 +8,7 @@ from requests import RequestException
 
 from src.api_client import ViagensAPIClient
 from src.config import API_URL, DEFAULT_PARAMS, build_headers, load_settings
-from src.database import connect_db, ensure_schema, insert_viagem, viagem_exists
+from src.database import connect_db, ensure_schema, insert_viagem
 
 
 LOGGER = logging.getLogger(__name__)
@@ -81,8 +81,7 @@ def ingest_viagens(
                     LOGGER.warning("Registro sem id ignorado: %s", item)
                     continue
 
-                if not viagem_exists(conn, viagem_id):
-                    insert_viagem(conn, item)
+                if insert_viagem(conn, item):
                     inserted_rows += 1
                     page_inserted_rows += 1
 
