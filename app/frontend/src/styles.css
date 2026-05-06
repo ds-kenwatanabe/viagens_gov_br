@@ -1,0 +1,307 @@
+:root {
+  color: #172033;
+  background: #eef2f5;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.app-shell {
+  display: grid;
+  min-height: 100vh;
+  grid-template-columns: 340px minmax(0, 1fr);
+}
+
+.sidebar {
+  border-right: 1px solid #d6dde5;
+  background: #f8fafc;
+  padding: 24px 20px;
+  overflow-y: auto;
+}
+
+.brand {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.brand-mark {
+  align-items: center;
+  background: #0f766e;
+  border-radius: 8px;
+  color: #fff;
+  display: inline-flex;
+  font-weight: 800;
+  height: 44px;
+  justify-content: center;
+  width: 44px;
+}
+
+.brand h1,
+.brand p,
+.page-header h2,
+.page-header p,
+.panel-header h3 {
+  margin: 0;
+}
+
+.brand h1 {
+  font-size: 18px;
+}
+
+.brand p,
+.page-header p {
+  color: #667085;
+  font-size: 13px;
+}
+
+.filters {
+  display: grid;
+  gap: 14px;
+}
+
+.filters label {
+  color: #344054;
+  display: grid;
+  font-size: 13px;
+  gap: 6px;
+}
+
+.filters input,
+.filters select {
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  color: #172033;
+  min-height: 38px;
+  padding: 8px 10px;
+  width: 100%;
+}
+
+.filter-title {
+  color: #344054;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.clear-button,
+.segmented button {
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  color: #334155;
+  cursor: pointer;
+  min-height: 32px;
+}
+
+.clear-button {
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.checkbox-list {
+  border: 1px solid #d6dde5;
+  border-radius: 8px;
+  max-height: 330px;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.checkbox-row {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 18px minmax(0, 1fr);
+  margin: 0 0 8px;
+}
+
+.checkbox-row input {
+  min-height: auto;
+}
+
+.checkbox-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.main-content {
+  min-width: 0;
+  padding: 24px;
+}
+
+.page-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.page-header h2 {
+  font-size: 28px;
+  letter-spacing: 0;
+}
+
+.status-pill {
+  background: #dbeafe;
+  border: 1px solid #93c5fd;
+  border-radius: 999px;
+  color: #1d4ed8;
+  font-size: 13px;
+  padding: 6px 10px;
+}
+
+.error-banner {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #991b1b;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+}
+
+.kpi-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(5, minmax(150px, 1fr));
+  margin-bottom: 18px;
+}
+
+.kpi-card,
+.panel {
+  background: #fff;
+  border: 1px solid #dbe3ea;
+  border-radius: 8px;
+}
+
+.kpi-card {
+  padding: 16px;
+}
+
+.kpi-card span {
+  color: #667085;
+  display: block;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.kpi-card strong {
+  color: #111827;
+  display: block;
+  font-size: 23px;
+  line-height: 1.15;
+}
+
+.analytics-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1.35fr) minmax(360px, 0.85fr);
+}
+
+.panel {
+  min-width: 0;
+  padding: 16px;
+}
+
+.panel.wide,
+.map-panel {
+  grid-column: span 1;
+}
+
+.panel-header {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.panel-header h3 {
+  font-size: 16px;
+}
+
+.segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.segmented button {
+  font-size: 12px;
+  padding: 5px 8px;
+}
+
+.segmented button.active {
+  background: #172033;
+  border-color: #172033;
+  color: #fff;
+}
+
+.plot {
+  height: 390px;
+  width: 100%;
+}
+
+.table-wrap {
+  max-height: 390px;
+  overflow: auto;
+}
+
+table {
+  border-collapse: collapse;
+  font-size: 13px;
+  width: 100%;
+}
+
+th,
+td {
+  border-bottom: 1px solid #edf1f5;
+  padding: 9px 6px;
+  text-align: left;
+}
+
+td:first-child {
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-panel {
+  grid-column: 1 / -1;
+}
+
+.map {
+  height: 480px;
+  width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-bottom: 1px solid #d6dde5;
+    border-right: 0;
+  }
+
+  .kpi-grid,
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+}

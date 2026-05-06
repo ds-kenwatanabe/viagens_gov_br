@@ -131,3 +131,46 @@ O arquivo `relatorio_viagens.pbix` contém o relatório com análises de gastos 
 - [Portal da Transparência](https://portaldatransparencia.gov.br)
 - [API de Dados do Portal da Transparência](https://portaldatransparencia.gov.br/api-de-dados)
 - [PostgreSQL](https://www.postgresql.org/)
+
+## App web local
+
+O repositório inclui um dashboard local com FastAPI, React, Plotly e Leaflet:
+
+```text
+app/
+├── backend/
+│   ├── main.py
+│   ├── queries.py
+│   └── schemas.py
+└── frontend/
+    └── src/
+```
+
+Instale as dependências Python e inicie o backend:
+
+```bash
+pip install -r requirements.txt
+uvicorn app.backend.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+Em outro terminal, inicie o frontend:
+
+```bash
+cd app/frontend
+npm install
+npm run dev
+```
+
+Acesse `http://127.0.0.1:5173`.
+
+Também há um `docker-compose.yml` com PostgreSQL, backend e frontend para desenvolvimento local.
+
+## Enriquecimento geográfico
+
+Crie a tabela e índices executando `src/views.sql` no PostgreSQL. O pipeline de geocodificação extrai localidades a partir de textos de motivo e grava cache em `viagem_localidades`.
+
+Antes de usar Nominatim, defina um `NOMINATIM_USER_AGENT` identificável no `.env`. A política pública do Nominatim exige identificação, cache de resultados e no máximo 1 requisição por segundo para o serviço público.
+
+```bash
+python -m src.geocode --limit 100 --delay-seconds 1
+```
