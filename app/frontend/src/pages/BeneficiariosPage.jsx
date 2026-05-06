@@ -19,8 +19,8 @@ export default function BeneficiariosPage({ rankings, cargoDistribution, trips }
         </ErrorBoundary>
       </div>
       <div className="panel wide">
-        <div className="panel-header"><h3>Distribuicao por cargo</h3></div>
-        <ErrorBoundary fallback="Falha ao carregar a distribuicao por cargo." resetKey={cargoDistribution?.length}>
+        <div className="panel-header"><h3>Distribuição por cargo</h3></div>
+        <ErrorBoundary fallback="Falha ao carregar a distribuição por cargo." resetKey={cargoDistribution?.length}>
           <BarChart rows={cargoDistribution} xKey="quantidade" color="#f59e0b" />
         </ErrorBoundary>
       </div>

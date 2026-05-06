@@ -13,6 +13,7 @@ from app.backend.queries import get_map_points
 from app.backend.queries import get_org_comparison
 from app.backend.queries import get_outliers
 from app.backend.queries import get_ranking
+from app.backend.queries import search_filter_options
 from app.backend.queries import get_time_series
 from app.backend.queries import get_trip_details
 from app.backend.schemas import DistributionRow
@@ -21,6 +22,7 @@ from app.backend.schemas import FilterParams
 from app.backend.schemas import KpiSummary
 from app.backend.schemas import MapPoint
 from app.backend.schemas import OutlierRow
+from app.backend.schemas import Option
 from app.backend.schemas import RankingDimension
 from app.backend.schemas import RankingRow
 from app.backend.schemas import TimeSeriesPoint
@@ -69,6 +71,17 @@ def health() -> dict[str, str]:
 @app.get("/filters", response_model=FilterOptions)
 def filters() -> dict:
     return get_filter_options()
+
+
+@app.get("/filters/{kind}", response_model=list[Option])
+def filter_search(
+    kind: str,
+    search: str = "",
+    limit: int = Query(default=80, ge=1, le=200),
+) -> list[dict]:
+    if kind not in {"beneficiarios", "cargos"}:
+        return []
+    return search_filter_options(kind, search, limit)
 
 
 @app.get("/kpis", response_model=KpiSummary)

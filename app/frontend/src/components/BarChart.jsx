@@ -19,7 +19,7 @@ export default function BarChart({ rows, xKey = 'valor_total', yKey = 'nome', co
         const width = maxValue ? Math.max((value / maxValue) * 100, 1) : 0;
         return (
           <div className="bar-row" key={`${row[yKey] || 'row'}-${index}`}>
-            <div className="bar-label" title={row[yKey]}>{row[yKey] || 'Nao informado'}</div>
+            <div className="bar-label" title={row[yKey]}>{row[yKey] || 'Não informado'}</div>
             <div className="bar-track">
               <div className="bar-fill" style={{ backgroundColor: color, width: `${width}%` }} />
             </div>

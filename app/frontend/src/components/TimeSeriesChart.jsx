@@ -32,7 +32,7 @@ export default function TimeSeriesChart({ data }) {
 
   return (
     <div className="timeseries-chart">
-      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Evolucao mensal de viagens">
+      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Evolução mensal de viagens">
         <line className="axis-line" x1={padding.left} x2={padding.left} y1={padding.top} y2={padding.top + chartHeight} />
         <line className="axis-line" x1={padding.left} x2={padding.left + chartWidth} y1={padding.top + chartHeight} y2={padding.top + chartHeight} />
         {[0, 0.25, 0.5, 0.75, 1].map((tick) => {

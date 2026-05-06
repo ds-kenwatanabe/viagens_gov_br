@@ -19,13 +19,13 @@ export default function OrgaosPage({ rankings, comparison, trips }) {
         </ErrorBoundary>
       </div>
       <div className="panel wide">
-        <div className="panel-header"><h3>Comparacao entre ministerios</h3></div>
-        <ErrorBoundary fallback="Falha ao carregar a comparacao entre ministerios." resetKey={comparison?.length}>
+        <div className="panel-header"><h3>Comparação entre ministérios</h3></div>
+        <ErrorBoundary fallback="Falha ao carregar a comparação entre ministérios." resetKey={comparison?.length}>
           <BarChart rows={comparison} color="#0f766e" />
         </ErrorBoundary>
       </div>
       <div className="panel map-panel">
-        <div className="panel-header"><h3>{'Orgao -> beneficiario -> viagem'}</h3></div>
+        <div className="panel-header"><h3>Órgão → beneficiário → viagem</h3></div>
         <ErrorBoundary fallback="Falha ao carregar o detalhamento de viagens." resetKey={trips?.length}>
           <TripTable rows={trips} />
         </ErrorBoundary>

@@ -26,6 +26,13 @@ export function getFilters() {
   return request('/filters');
 }
 
+export function searchFilterOptions(kind, search, limit = 80) {
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  params.set('limit', String(limit));
+  return request(`/filters/${kind}?${params.toString()}`);
+}
+
 export function getKpis(filters) {
   const query = buildQuery(filters);
   return request(`/kpis${query ? `?${query}` : ''}`);

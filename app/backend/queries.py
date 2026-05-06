@@ -73,6 +73,37 @@ def get_filter_options() -> dict:
     }
 
 
+def search_filter_options(kind: str, search: str = "", limit: int = 80) -> list[dict]:
+    columns = {
+        "beneficiarios": "beneficiario_nome",
+        "cargos": "cargo_descricao",
+    }
+    column = columns[kind]
+    params: list[str | int] = []
+    search_sql = ""
+    if search:
+        search_sql = f"AND {column} ILIKE %s"
+        params.append(f"%{search}%")
+    params.append(limit)
+
+    with get_cursor() as cursor:
+        cursor.execute(
+            f"""
+            SELECT {column} AS value,
+                   {column} || ' (' || COUNT(*)::text || ')' AS label
+              FROM viagens
+             WHERE {column} IS NOT NULL
+               AND {column} <> ''
+               {search_sql}
+             GROUP BY {column}
+             ORDER BY COUNT(*) DESC, {column}
+             LIMIT %s
+            """,
+            params,
+        )
+        return cursor.fetchall()
+
+
 def get_kpis(filters: FilterParams) -> dict:
     where_sql, params = _build_where(filters)
     with get_cursor() as cursor:
@@ -96,12 +127,12 @@ def get_org_comparison(filters: FilterParams) -> list[dict]:
     with get_cursor() as cursor:
         cursor.execute(
             f"""
-            SELECT COALESCE(orgao_nome, 'Nao informado') AS nome,
+            SELECT COALESCE(orgao_nome, 'Não informado') AS nome,
                    COUNT(*) AS quantidade,
                    COALESCE(SUM(valor_total_viagem), 0) AS valor_total
               FROM vw_viagens_dashboard
              {where_sql}
-             GROUP BY COALESCE(orgao_nome, 'Nao informado')
+             GROUP BY COALESCE(orgao_nome, 'Não informado')
              ORDER BY valor_total DESC
              LIMIT 30
             """,
@@ -124,12 +155,12 @@ def get_ranking(
         order_sql = "quantidade DESC, valor_total DESC" if order_by == "quantidade" else "valor_total DESC"
         cursor.execute(
             f"""
-            SELECT COALESCE({column}, 'Nao informado') AS nome,
+            SELECT COALESCE({column}, 'Não informado') AS nome,
                    COUNT(*) AS quantidade,
                    COALESCE(SUM(valor_total_viagem), 0) AS valor_total
               FROM viagens
              {where_sql}
-             GROUP BY COALESCE({column}, 'Nao informado')
+             GROUP BY COALESCE({column}, 'Não informado')
              ORDER BY {order_sql}
              LIMIT %s
             """,
@@ -219,12 +250,12 @@ def get_cargo_distribution(filters: FilterParams, limit: int = 30) -> list[dict]
     with get_cursor() as cursor:
         cursor.execute(
             f"""
-            SELECT COALESCE(cargo_descricao, 'Nao informado') AS nome,
+            SELECT COALESCE(cargo_descricao, 'Não informado') AS nome,
                    COUNT(*) AS quantidade,
                    COALESCE(AVG(valor_total_viagem), 0) AS valor_medio
               FROM vw_viagens_dashboard
              {where_sql}
-             GROUP BY COALESCE(cargo_descricao, 'Nao informado')
+             GROUP BY COALESCE(cargo_descricao, 'Não informado')
              ORDER BY quantidade DESC
              LIMIT %s
             """,
@@ -245,7 +276,7 @@ def get_outliers(filters: FilterParams, kind: str, limit: int = 30) -> list[dict
 def _outlier_query(kind: str, where_sql: str) -> str:
     if kind == "valores_altos":
         return f"""
-            SELECT CONCAT(id, ' - ', COALESCE(beneficiario_nome, 'Nao informado')) AS nome,
+            SELECT CONCAT(id, ' - ', COALESCE(beneficiario_nome, 'Não informado')) AS nome,
                    1 AS quantidade,
                    COALESCE(valor_total_viagem, 0) AS valor_total,
                    COALESCE(valor_total_viagem, 0) AS valor_medio,
@@ -257,45 +288,45 @@ def _outlier_query(kind: str, where_sql: str) -> str:
         """
     if kind == "recorrentes":
         return f"""
-            SELECT COALESCE(beneficiario_nome, 'Nao informado') AS nome,
+            SELECT COALESCE(beneficiario_nome, 'Não informado') AS nome,
                    COUNT(*) AS quantidade,
                    COALESCE(SUM(valor_total_viagem), 0) AS valor_total,
                    COALESCE(AVG(valor_total_viagem), 0) AS valor_medio,
                    MIN(data_inicio_afastamento)::text || ' a ' || MAX(data_inicio_afastamento)::text AS detalhe
               FROM vw_viagens_dashboard
              {where_sql}
-             GROUP BY COALESCE(beneficiario_nome, 'Nao informado')
+             GROUP BY COALESCE(beneficiario_nome, 'Não informado')
             HAVING COUNT(*) >= 5
              ORDER BY quantidade DESC, valor_total DESC
              LIMIT %s
         """
     if kind == "cargos_media":
         return f"""
-            SELECT COALESCE(cargo_descricao, 'Nao informado') AS nome,
+            SELECT COALESCE(cargo_descricao, 'Não informado') AS nome,
                    COUNT(*) AS quantidade,
                    COALESCE(SUM(valor_total_viagem), 0) AS valor_total,
                    COALESCE(AVG(valor_total_viagem), 0) AS valor_medio,
                    NULL AS detalhe
               FROM vw_viagens_dashboard
              {where_sql}
-             GROUP BY COALESCE(cargo_descricao, 'Nao informado')
+             GROUP BY COALESCE(cargo_descricao, 'Não informado')
             HAVING COUNT(*) >= 5
              ORDER BY valor_medio DESC
              LIMIT %s
         """
 
     return f"""
-        SELECT COALESCE(beneficiario_nome, 'Nao informado') AS nome,
+        SELECT COALESCE(beneficiario_nome, 'Não informado') AS nome,
                COUNT(*) AS quantidade,
                COALESCE(SUM(valor_total_viagem), 0) AS valor_total,
                COALESCE(AVG(valor_total_viagem), 0) AS valor_medio,
-               'Viagens de ate 2 dias' AS detalhe
+               'Viagens de até 2 dias' AS detalhe
           FROM vw_viagens_dashboard
          {where_sql}
            AND data_inicio_afastamento IS NOT NULL
            AND data_fim_afastamento IS NOT NULL
            AND data_fim_afastamento - data_inicio_afastamento <= 2
-         GROUP BY COALESCE(beneficiario_nome, 'Nao informado')
+         GROUP BY COALESCE(beneficiario_nome, 'Não informado')
         HAVING COUNT(*) >= 3
          ORDER BY quantidade DESC, valor_total DESC
          LIMIT %s

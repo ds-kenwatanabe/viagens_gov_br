@@ -136,6 +136,35 @@ select {
   width: 100%;
 }
 
+.filter-actions {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.filter-actions .clear-button {
+  margin-bottom: 8px;
+}
+
+.apply-button {
+  border-color: #0f766e;
+  color: #0f766e;
+  font-weight: 700;
+}
+
+.selected-filter {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 6px;
+  color: #047857;
+  font-size: 12px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  padding: 6px 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .checkbox-list {
   border: 1px solid #d6dde5;
   border-radius: 8px;

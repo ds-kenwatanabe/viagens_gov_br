@@ -1,4 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
+import { searchFilterOptions } from '../api.js';
 
 export default function FilterPanel({ filters, options, onChange }) {
   const update = (patch) => onChange({ ...filters, ...patch });
@@ -16,7 +18,7 @@ export default function FilterPanel({ filters, options, onChange }) {
   return (
     <div className="filters">
       <label>
-        Periodo inicial
+        Período inicial
         <input
           type="date"
           value={filters.data_inicio}
@@ -25,7 +27,7 @@ export default function FilterPanel({ filters, options, onChange }) {
       </label>
 
       <label>
-        Periodo final
+        Período final
         <input
           type="date"
           value={filters.data_fim}
@@ -47,15 +49,17 @@ export default function FilterPanel({ filters, options, onChange }) {
       </label>
 
       <SearchableOptionList
-        emptyLabel="Todos os beneficiarios"
+        emptyLabel="Todos os beneficiários"
+        kind="beneficiarios"
         onSelect={(value) => update({ beneficiario: value })}
         options={options?.beneficiarios || []}
         selected={filters.beneficiario}
-        title="Beneficiario"
+        title="Beneficiário"
       />
 
       <SearchableOptionList
         emptyLabel="Todos os cargos"
+        kind="cargos"
         onSelect={(value) => update({ cargo: value })}
         options={options?.cargos || []}
         selected={filters.cargo}
@@ -63,9 +67,9 @@ export default function FilterPanel({ filters, options, onChange }) {
       />
 
       <div className="orgao-list">
-        <div className="filter-title">Orgaos</div>
+        <div className="filter-title">Órgãos</div>
         <button className="clear-button" type="button" onClick={() => update({ orgao: [] })}>
-          Limpar selecao
+          Limpar seleção
         </button>
         <div className="checkbox-list">
           {(options?.orgaos || []).slice(0, 80).map((option) => (
@@ -84,17 +88,53 @@ export default function FilterPanel({ filters, options, onChange }) {
   );
 }
 
-function SearchableOptionList({ emptyLabel, onSelect, options, selected, title }) {
+function SearchableOptionList({ emptyLabel, kind, onSelect, options, selected, title }) {
   const [query, setQuery] = useState('');
+  const [remoteOptions, setRemoteOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const trimmedQuery = query.trim();
+
+  useEffect(() => {
+    let ignore = false;
+    if (!trimmedQuery) {
+      setRemoteOptions([]);
+      return () => {
+        ignore = true;
+      };
+    }
+
+    setLoading(true);
+    const timer = window.setTimeout(() => {
+      searchFilterOptions(kind, trimmedQuery)
+        .then((nextOptions) => {
+          if (!ignore) setRemoteOptions(nextOptions);
+        })
+        .catch(() => {
+          if (!ignore) setRemoteOptions([]);
+        })
+        .finally(() => {
+          if (!ignore) setLoading(false);
+        });
+    }, 250);
+
+    return () => {
+      ignore = true;
+      window.clearTimeout(timer);
+    };
+  }, [kind, trimmedQuery]);
+
   const visibleOptions = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-    return options
+    const sourceOptions = trimmedQuery ? remoteOptions : options;
+    const normalizedQuery = trimmedQuery.toLowerCase();
+    return sourceOptions
       .filter((option) => {
         if (!normalizedQuery) return true;
         return option.label.toLowerCase().includes(normalizedQuery);
       })
       .slice(0, 80);
-  }, [options, query]);
+  }, [options, remoteOptions, trimmedQuery]);
+
+  const canApplyText = trimmedQuery && selected !== trimmedQuery;
 
   return (
     <div className="option-picker">
@@ -102,15 +142,27 @@ function SearchableOptionList({ emptyLabel, onSelect, options, selected, title }
       <input
         aria-label={`Buscar ${title}`}
         type="search"
-        placeholder="Buscar na lista"
+        placeholder="Digite ou cole para buscar"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' && trimmedQuery) onSelect(trimmedQuery);
+        }}
       />
-      <button className="clear-button" type="button" onClick={() => onSelect('')}>
-        {emptyLabel}
-      </button>
+      <div className="filter-actions">
+        <button className="clear-button" type="button" onClick={() => onSelect('')}>
+          {emptyLabel}
+        </button>
+        {canApplyText && (
+          <button className="clear-button apply-button" type="button" onClick={() => onSelect(trimmedQuery)}>
+            Aplicar texto
+          </button>
+        )}
+      </div>
+      {selected && <div className="selected-filter" title={selected}>Selecionado: {selected}</div>}
       <div className="choice-list">
-        {visibleOptions.map((option) => (
+        {loading && <div className="empty-choice">Buscando...</div>}
+        {!loading && visibleOptions.map((option) => (
           <button
             className={selected === option.value ? 'choice-row active' : 'choice-row'}
             key={option.value}
@@ -121,8 +173,8 @@ function SearchableOptionList({ emptyLabel, onSelect, options, selected, title }
             {option.label}
           </button>
         ))}
-        {!visibleOptions.length && (
-          <div className="empty-choice">Nenhuma opcao encontrada.</div>
+        {!loading && !visibleOptions.length && (
+          <div className="empty-choice">Nenhuma opção encontrada. Use "Aplicar texto" para filtrar pelo termo colado.</div>
         )}
       </div>
     </div>
