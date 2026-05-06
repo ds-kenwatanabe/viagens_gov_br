@@ -336,6 +336,89 @@ select {
   height: 360px;
 }
 
+.bar-list {
+  display: grid;
+  gap: 10px;
+  min-height: 360px;
+}
+
+.bar-row {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(170px, 0.9fr) minmax(120px, 1.4fr) 64px;
+}
+
+.bar-label {
+  color: #334155;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-track {
+  background: #e5eaf0;
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  border-radius: 999px;
+  height: 100%;
+}
+
+.bar-value {
+  color: #667085;
+  font-size: 12px;
+  text-align: right;
+}
+
+.timeseries-chart {
+  min-height: 390px;
+  width: 100%;
+}
+
+.timeseries-chart svg {
+  display: block;
+  height: 390px;
+  width: 100%;
+}
+
+.axis-line {
+  stroke: #94a3b8;
+  stroke-width: 1;
+}
+
+.grid-line {
+  stroke: #e5eaf0;
+  stroke-width: 1;
+}
+
+.axis-label {
+  fill: #667085;
+  font-size: 12px;
+}
+
+.trip-bar {
+  fill: rgba(245, 158, 11, 0.36);
+}
+
+.value-line {
+  fill: none;
+  stroke: #2563eb;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.value-point {
+  fill: #0f766e;
+  stroke: #fff;
+  stroke-width: 2;
+}
+
 .table-wrap {
   max-height: 390px;
   overflow: auto;

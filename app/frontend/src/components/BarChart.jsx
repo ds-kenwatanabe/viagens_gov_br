@@ -1,34 +1,32 @@
-import Plot from './Plot.jsx';
+const compactFormatter = new Intl.NumberFormat('pt-BR', {
+  maximumFractionDigits: 0,
+  notation: 'compact',
+});
 
 export default function BarChart({ rows, xKey = 'valor_total', yKey = 'nome', color = '#2563eb' }) {
   const safeRows = Array.isArray(rows) ? rows : [];
-  const sortedRows = [...safeRows].reverse();
+  const visibleRows = [...safeRows].slice(0, 18);
+  const maxValue = Math.max(...visibleRows.map((row) => Number(row[xKey] || 0)), 0);
 
-  if (!sortedRows.length) {
+  if (!visibleRows.length) {
     return <div className="component-loading">Sem dados para o filtro atual.</div>;
   }
 
   return (
-    <Plot
-      data={[
-        {
-          x: sortedRows.map((row) => Number(row[xKey] || 0)),
-          y: sortedRows.map((row) => row[yKey] || 'Nao informado'),
-          type: 'bar',
-          orientation: 'h',
-          marker: { color },
-        },
-      ]}
-      layout={{
-        autosize: true,
-        margin: { l: 160, r: 16, t: 8, b: 32 },
-        paper_bgcolor: 'transparent',
-        plot_bgcolor: 'transparent',
-        font: { family: 'Inter, system-ui, sans-serif', color: '#172033', size: 11 },
-      }}
-      config={{ displayModeBar: false, responsive: true }}
-      useResizeHandler
-      className="plot compact"
-    />
+    <div className="bar-list">
+      {visibleRows.map((row, index) => {
+        const value = Number(row[xKey] || 0);
+        const width = maxValue ? Math.max((value / maxValue) * 100, 1) : 0;
+        return (
+          <div className="bar-row" key={`${row[yKey] || 'row'}-${index}`}>
+            <div className="bar-label" title={row[yKey]}>{row[yKey] || 'Nao informado'}</div>
+            <div className="bar-track">
+              <div className="bar-fill" style={{ backgroundColor: color, width: `${width}%` }} />
+            </div>
+            <div className="bar-value">{compactFormatter.format(value)}</div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
