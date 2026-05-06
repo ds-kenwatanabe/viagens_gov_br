@@ -6,7 +6,7 @@ const moneyFormatter = new Intl.NumberFormat('pt-BR', {
   maximumFractionDigits: 0,
 });
 
-export default function TravelMap({ points }) {
+export default function TravelMap({ mode, points }) {
   return (
     <MapContainer center={[-14.235, -51.9253]} zoom={4} scrollWheelZoom className="map">
       <TileLayer
@@ -14,11 +14,11 @@ export default function TravelMap({ points }) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       {points.map((point) => {
-        const radius = Math.max(6, Math.min(26, Math.sqrt(Number(point.quantidade || 1)) * 2));
+        const radius = Math.max(6, Math.min(30, Math.sqrt(Number(point.quantidade || 1)) * 2));
         const label = [point.cidade, point.estado, point.pais].filter(Boolean).join(', ');
         return (
           <CircleMarker
-            key={`${point.latitude}-${point.longitude}-${label}`}
+            key={`${mode}-${point.latitude}-${point.longitude}-${label}`}
             center={[point.latitude, point.longitude]}
             radius={radius}
             pathOptions={{ color: '#0f766e', fillColor: '#14b8a6', fillOpacity: 0.45, weight: 2 }}
@@ -26,16 +26,24 @@ export default function TravelMap({ points }) {
             <Popup>
               <strong>{label || 'Localidade'}</strong>
               <br />
-              Beneficiário: {point.beneficiario_nome || 'Não informado'}
-              <br />
+              {mode === 'points' && (
+                <>
+                  Beneficiário: {point.beneficiario_nome || 'Não informado'}
+                  <br />
+                </>
+              )}
               Órgão: {point.orgao_nome || 'Não informado'}
               <br />
               Tipo: {point.tipo_viagem || '-'}
               <br />
               Período: {point.data_inicio_afastamento || '-'} a {point.data_fim_afastamento || '-'}
               <br />
-              Motivo: {point.motivo || '-'}
-              <br />
+              {mode === 'points' && (
+                <>
+                  Motivo: {point.motivo || '-'}
+                  <br />
+                </>
+              )}
               Viagens: {point.quantidade}
               <br />
               Valor: {moneyFormatter.format(Number(point.valor_total || 0))}

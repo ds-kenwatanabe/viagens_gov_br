@@ -41,6 +41,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [mapRegion, setMapRegion] = useState('todos');
+  const [mapMode, setMapMode] = useState('clusters');
   const [data, setData] = useState({
     kpis: null,
     timeSeries: [],
@@ -68,7 +69,7 @@ export default function App() {
     setLoading(true);
     setError('');
 
-    loadPageData(activePage, filters)
+    loadPageData(activePage, filters, mapMode)
       .then((nextData) => {
         if (!ignore) {
           setData((current) => ({
@@ -91,7 +92,7 @@ export default function App() {
     return () => {
       ignore = true;
     };
-  }, [activePage, filters]);
+  }, [activePage, filters, mapMode]);
 
   const visibleMapPoints = data.mapPoints.filter((point) => {
     if (mapRegion === 'brasil') return point.pais === 'Brasil';
@@ -156,8 +157,10 @@ export default function App() {
         )}
         {activePage === 'mapa' && (
           <MapPage
+            mapMode={mapMode}
             points={visibleMapPoints}
             mapRegion={mapRegion}
+            onModeChange={setMapMode}
             onRegionChange={setMapRegion}
           />
         )}
@@ -167,7 +170,7 @@ export default function App() {
   );
 }
 
-async function loadPageData(activePage, filters) {
+async function loadPageData(activePage, filters, mapMode) {
   if (activePage === 'overview') {
     const [kpis, timeSeries] = await Promise.all([
       getKpis(filters),
@@ -205,7 +208,7 @@ async function loadPageData(activePage, filters) {
   }
 
   if (activePage === 'mapa') {
-    return { mapPoints: await getMapPoints(filters) };
+    return { mapPoints: await getMapPoints(filters, mapMode) };
   }
 
   const [valoresAltos, recorrentes, cargosMedia, curtas] = await Promise.all([

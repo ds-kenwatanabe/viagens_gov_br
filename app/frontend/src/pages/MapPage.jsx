@@ -1,12 +1,25 @@
 import TravelMap from '../components/TravelMap.jsx';
 
-export default function MapPage({ points, mapRegion, onRegionChange }) {
+export default function MapPage({ points, mapMode, mapRegion, onModeChange, onRegionChange }) {
   return (
     <section className="analytics-grid single">
       <div className="panel map-panel">
         <div className="panel-header">
-          <h3>Pontos geocodificados</h3>
+          <h3>{mapMode === 'clusters' ? 'Localidades agregadas' : 'Viagens geocodificadas'}</h3>
           <div className="segmented">
+            {[
+              ['clusters', 'Clusters'],
+              ['points', 'Pontos'],
+            ].map(([key, label]) => (
+              <button
+                className={mapMode === key ? 'active' : ''}
+                key={key}
+                onClick={() => onModeChange(key)}
+                type="button"
+              >
+                {label}
+              </button>
+            ))}
             {[
               ['todos', 'Todos'],
               ['brasil', 'Brasil'],
@@ -23,7 +36,7 @@ export default function MapPage({ points, mapRegion, onRegionChange }) {
             ))}
           </div>
         </div>
-        <TravelMap points={points} />
+        <TravelMap mode={mapMode} points={points} />
       </div>
     </section>
   );

@@ -187,8 +187,16 @@ def get_time_series(filters: FilterParams) -> list[dict]:
         return cursor.fetchall()
 
 
-def get_map_points(filters: FilterParams) -> list[dict]:
+def get_map_points(
+    filters: FilterParams,
+    map_mode: str = "points",
+    limit: int = 500,
+) -> list[dict]:
+    if map_mode == "clusters":
+        return get_map_clusters(filters, limit)
+
     where_sql, params = _build_where(filters)
+    params.append(limit)
     with get_cursor() as cursor:
         cursor.execute(
             f"""
@@ -210,7 +218,45 @@ def get_map_points(filters: FilterParams) -> list[dict]:
               FROM vw_mapa_viagens
              {where_sql}
              ORDER BY valor_total_viagem DESC NULLS LAST
-             LIMIT 500
+             LIMIT %s
+            """,
+            params,
+        )
+        return cursor.fetchall()
+
+
+def get_map_clusters(filters: FilterParams, limit: int = 2000) -> list[dict]:
+    where_sql, params = _build_where(filters)
+    params.append(limit)
+    with get_cursor() as cursor:
+        cursor.execute(
+            f"""
+            SELECT NULL::integer AS id,
+                   CASE
+                       WHEN COUNT(DISTINCT orgao_nome) = 1 THEN MAX(orgao_nome)
+                       ELSE 'Múltiplos órgãos'
+                   END AS orgao_nome,
+                   NULL::text AS beneficiario_nome,
+                   NULL::text AS motivo,
+                   CASE
+                       WHEN COUNT(DISTINCT tipo_viagem) = 1 THEN MAX(tipo_viagem)
+                       ELSE 'Misto'
+                   END AS tipo_viagem,
+                   MIN(data_inicio_afastamento) AS data_inicio_afastamento,
+                   MAX(data_fim_afastamento) AS data_fim_afastamento,
+                   cidade,
+                   estado,
+                   pais,
+                   latitude::float AS latitude,
+                   longitude::float AS longitude,
+                   COUNT(*) AS quantidade,
+                   COALESCE(SUM(valor_total_viagem), 0) AS valor_total,
+                   AVG(confidence)::float AS confidence
+              FROM vw_mapa_viagens
+             {where_sql}
+             GROUP BY cidade, estado, pais, latitude, longitude
+             ORDER BY quantidade DESC, valor_total DESC
+             LIMIT %s
             """,
             params,
         )

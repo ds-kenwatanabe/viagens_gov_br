@@ -110,8 +110,12 @@ def timeseries(filters: FilterParams = Depends(parse_filters)) -> list[dict]:
 
 
 @app.get("/map", response_model=list[MapPoint])
-def map_points(filters: FilterParams = Depends(parse_filters)) -> list[dict]:
-    return get_map_points(filters)
+def map_points(
+    map_mode: str = Query(default="clusters", pattern="^(points|clusters)$"),
+    limit: int = Query(default=1000, ge=1, le=5000),
+    filters: FilterParams = Depends(parse_filters),
+) -> list[dict]:
+    return get_map_points(filters, map_mode, limit)
 
 
 @app.get("/trips", response_model=list[TripDetail])

@@ -49,9 +49,10 @@ export function getTimeSeries(filters) {
   return request(`/timeseries${query ? `?${query}` : ''}`);
 }
 
-export function getMapPoints(filters) {
+export function getMapPoints(filters, mapMode = 'clusters', limit = 1000) {
   const query = buildQuery(filters);
-  return request(`/map${query ? `?${query}` : ''}`);
+  const sep = query ? '&' : '?';
+  return request(`/map${query ? `?${query}` : ''}${sep}map_mode=${mapMode}&limit=${limit}`);
 }
 
 export function getOrgComparison(filters) {
