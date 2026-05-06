@@ -5,6 +5,8 @@ const moneyFormatter = new Intl.NumberFormat('pt-BR', {
 });
 
 export default function TripTable({ rows }) {
+  const safeRows = Array.isArray(rows) ? rows : [];
+
   return (
     <div className="table-wrap detail-table">
       <table>
@@ -19,7 +21,7 @@ export default function TripTable({ rows }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
+          {safeRows.map((row) => (
             <tr key={row.id}>
               <td title={row.beneficiario_nome}>{row.beneficiario_nome || 'Não informado'}</td>
               <td title={row.orgao_nome}>{row.orgao_nome || 'Não informado'}</td>
@@ -29,6 +31,11 @@ export default function TripTable({ rows }) {
               <td>{moneyFormatter.format(Number(row.valor_total_viagem || 0))}</td>
             </tr>
           ))}
+          {!safeRows.length && (
+            <tr>
+              <td colSpan="6">Sem dados para o filtro atual.</td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>

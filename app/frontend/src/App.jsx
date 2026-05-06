@@ -70,7 +70,16 @@ export default function App() {
 
     loadPageData(activePage, filters)
       .then((nextData) => {
-        if (!ignore) setData((current) => ({ ...current, ...nextData }));
+        if (!ignore) {
+          setData((current) => ({
+            ...current,
+            ...nextData,
+            rankings: {
+              ...current.rankings,
+              ...(nextData.rankings || {}),
+            },
+          }));
+        }
       })
       .catch((err) => {
         if (!ignore) setError(err.message);

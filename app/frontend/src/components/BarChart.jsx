@@ -1,7 +1,13 @@
 import Plot from 'react-plotly.js';
 
 export default function BarChart({ rows, xKey = 'valor_total', yKey = 'nome', color = '#2563eb' }) {
-  const sortedRows = [...rows].reverse();
+  const safeRows = Array.isArray(rows) ? rows : [];
+  const sortedRows = [...safeRows].reverse();
+
+  if (!sortedRows.length) {
+    return <div className="component-loading">Sem dados para o filtro atual.</div>;
+  }
+
   return (
     <Plot
       data={[

@@ -1,4 +1,5 @@
 import BarChart from '../components/BarChart.jsx';
+import ErrorBoundary from '../components/ErrorBoundary.jsx';
 import RankingTable from '../components/RankingTable.jsx';
 import TripTable from '../components/TripTable.jsx';
 
@@ -7,19 +8,27 @@ export default function OrgaosPage({ rankings, comparison, trips }) {
     <section className="analytics-grid">
       <div className="panel">
         <div className="panel-header"><h3>Ranking por valor</h3></div>
-        <RankingTable rows={rankings.orgaosValor || []} />
+        <ErrorBoundary fallback="Falha ao carregar o ranking por valor.">
+          <RankingTable rows={rankings.orgaosValor || []} />
+        </ErrorBoundary>
       </div>
       <div className="panel">
         <div className="panel-header"><h3>Ranking por quantidade</h3></div>
-        <RankingTable rows={rankings.orgaosQuantidade || []} />
+        <ErrorBoundary fallback="Falha ao carregar o ranking por quantidade.">
+          <RankingTable rows={rankings.orgaosQuantidade || []} />
+        </ErrorBoundary>
       </div>
       <div className="panel wide">
         <div className="panel-header"><h3>Comparação entre ministérios</h3></div>
-        <BarChart rows={comparison} color="#0f766e" />
+        <ErrorBoundary fallback="Falha ao carregar a comparacao entre ministerios.">
+          <BarChart rows={comparison} color="#0f766e" />
+        </ErrorBoundary>
       </div>
       <div className="panel map-panel">
         <div className="panel-header"><h3>Órgão → beneficiário → viagem</h3></div>
-        <TripTable rows={trips} />
+        <ErrorBoundary fallback="Falha ao carregar o detalhamento de viagens.">
+          <TripTable rows={trips} />
+        </ErrorBoundary>
       </div>
     </section>
   );
