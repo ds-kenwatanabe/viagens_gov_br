@@ -1,18 +1,21 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
+  getCargoDistribution,
   getFilters,
   getKpis,
   getMapPoints,
+  getOrgComparison,
+  getOutliers,
   getRanking,
   getTimeSeries,
+  getTrips,
 } from './api.js';
 import FilterPanel from './components/FilterPanel.jsx';
-import ErrorBoundary from './components/ErrorBoundary.jsx';
-import KpiGrid from './components/KpiGrid.jsx';
-import RankingTable from './components/RankingTable.jsx';
-
-const TimeSeriesChart = lazy(() => import('./components/TimeSeriesChart.jsx'));
-const TravelMap = lazy(() => import('./components/TravelMap.jsx'));
+import BeneficiariosPage from './pages/BeneficiariosPage.jsx';
+import MapPage from './pages/MapPage.jsx';
+import OrgaosPage from './pages/OrgaosPage.jsx';
+import OutliersPage from './pages/OutliersPage.jsx';
+import OverviewPage from './pages/OverviewPage.jsx';
 
 const initialFilters = {
   orgao: [],
@@ -23,25 +26,35 @@ const initialFilters = {
   tipo_viagem: '',
 };
 
+const pages = [
+  ['overview', 'Visão geral'],
+  ['orgaos', 'Órgãos'],
+  ['beneficiarios', 'Beneficiários'],
+  ['mapa', 'Mapa'],
+  ['outliers', 'Outliers'],
+];
+
 export default function App() {
+  const [activePage, setActivePage] = useState('overview');
   const [filters, setFilters] = useState(initialFilters);
   const [options, setOptions] = useState(null);
-  const [kpis, setKpis] = useState(null);
-  const [timeSeries, setTimeSeries] = useState([]);
-  const [mapPoints, setMapPoints] = useState([]);
-  const [rankings, setRankings] = useState({});
-  const [activeRanking, setActiveRanking] = useState('beneficiarios');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [mapRegion, setMapRegion] = useState('todos');
+  const [data, setData] = useState({
+    kpis: null,
+    timeSeries: [],
+    rankings: {},
+    comparison: [],
+    trips: [],
+    cargoDistribution: [],
+    mapPoints: [],
+    outliers: {},
+  });
 
-  const rankingTabs = useMemo(
-    () => [
-      ['beneficiarios', 'Beneficiários'],
-      ['orgaos', 'Órgãos'],
-      ['cargos', 'Cargos'],
-      ['ugs', 'UGs'],
-    ],
-    [],
+  const pageTitle = useMemo(
+    () => pages.find(([key]) => key === activePage)?.[1] || 'Dashboard',
+    [activePage],
   );
 
   useEffect(() => {
@@ -55,18 +68,9 @@ export default function App() {
     setLoading(true);
     setError('');
 
-    Promise.all([
-      getKpis(filters),
-      getTimeSeries(filters),
-      getMapPoints(filters),
-      Promise.all(rankingTabs.map(([key]) => getRanking(key, filters))),
-    ])
-      .then(([kpiData, seriesData, mapData, rankingData]) => {
-        if (ignore) return;
-        setKpis(kpiData);
-        setTimeSeries(seriesData);
-        setMapPoints(mapData);
-        setRankings(Object.fromEntries(rankingTabs.map(([key], index) => [key, rankingData[index]])));
+    loadPageData(activePage, filters)
+      .then((nextData) => {
+        if (!ignore) setData((current) => ({ ...current, ...nextData }));
       })
       .catch((err) => {
         if (!ignore) setError(err.message);
@@ -78,7 +82,13 @@ export default function App() {
     return () => {
       ignore = true;
     };
-  }, [filters, rankingTabs]);
+  }, [activePage, filters]);
+
+  const visibleMapPoints = data.mapPoints.filter((point) => {
+    if (mapRegion === 'brasil') return point.pais === 'Brasil';
+    if (mapRegion === 'exterior') return point.pais !== 'Brasil';
+    return true;
+  });
 
   return (
     <div className="app-shell">
@@ -90,13 +100,27 @@ export default function App() {
             <p>Dashboard local PostgreSQL</p>
           </div>
         </div>
+
+        <nav className="page-nav">
+          {pages.map(([key, label]) => (
+            <button
+              className={activePage === key ? 'active' : ''}
+              key={key}
+              onClick={() => setActivePage(key)}
+              type="button"
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+
         <FilterPanel filters={filters} options={options} onChange={setFilters} />
       </aside>
 
       <main className="main-content">
         <div className="page-header">
           <div>
-            <h2>Gastos e deslocamentos</h2>
+            <h2>{pageTitle}</h2>
             <p>{filters.data_inicio} a {filters.data_fim}</p>
           </div>
           {loading && <span className="status-pill">Atualizando</span>}
@@ -104,51 +128,89 @@ export default function App() {
 
         {error && <div className="error-banner">{error}</div>}
 
-        <KpiGrid data={kpis} />
-
-        <section className="analytics-grid">
-          <div className="panel wide">
-            <div className="panel-header">
-              <h3>Série temporal</h3>
-            </div>
-            <ErrorBoundary fallback="Falha ao carregar o gráfico temporal.">
-              <Suspense fallback={<div className="component-loading">Carregando gráfico</div>}>
-                <TimeSeriesChart data={timeSeries} />
-              </Suspense>
-            </ErrorBoundary>
-          </div>
-
-          <div className="panel">
-            <div className="panel-header">
-              <h3>Ranking</h3>
-              <div className="segmented">
-                {rankingTabs.map(([key, label]) => (
-                  <button
-                    key={key}
-                    className={activeRanking === key ? 'active' : ''}
-                    onClick={() => setActiveRanking(key)}
-                    type="button"
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <RankingTable rows={rankings[activeRanking] || []} />
-          </div>
-
-          <div className="panel map-panel">
-            <div className="panel-header">
-              <h3>Mapa geográfico</h3>
-            </div>
-            <ErrorBoundary fallback="Falha ao carregar o mapa.">
-              <Suspense fallback={<div className="component-loading">Carregando mapa</div>}>
-                <TravelMap points={mapPoints} />
-              </Suspense>
-            </ErrorBoundary>
-          </div>
-        </section>
+        {activePage === 'overview' && (
+          <OverviewPage kpis={data.kpis} timeSeries={data.timeSeries} />
+        )}
+        {activePage === 'orgaos' && (
+          <OrgaosPage
+            rankings={data.rankings}
+            comparison={data.comparison}
+            trips={data.trips}
+          />
+        )}
+        {activePage === 'beneficiarios' && (
+          <BeneficiariosPage
+            rankings={data.rankings}
+            cargoDistribution={data.cargoDistribution}
+            trips={data.trips}
+          />
+        )}
+        {activePage === 'mapa' && (
+          <MapPage
+            points={visibleMapPoints}
+            mapRegion={mapRegion}
+            onRegionChange={setMapRegion}
+          />
+        )}
+        {activePage === 'outliers' && <OutliersPage outliers={data.outliers} />}
       </main>
     </div>
   );
+}
+
+async function loadPageData(activePage, filters) {
+  if (activePage === 'overview') {
+    const [kpis, timeSeries] = await Promise.all([
+      getKpis(filters),
+      getTimeSeries(filters),
+    ]);
+    return { kpis, timeSeries };
+  }
+
+  if (activePage === 'orgaos') {
+    const [orgaosValor, orgaosQuantidade, comparison, trips] = await Promise.all([
+      getRanking('orgaos', filters, 20, 'valor'),
+      getRanking('orgaos', filters, 20, 'quantidade'),
+      getOrgComparison(filters),
+      getTrips(filters, 100),
+    ]);
+    return {
+      rankings: { orgaosValor, orgaosQuantidade },
+      comparison,
+      trips,
+    };
+  }
+
+  if (activePage === 'beneficiarios') {
+    const [beneficiariosValor, beneficiariosQuantidade, cargoDistribution, trips] = await Promise.all([
+      getRanking('beneficiarios', filters, 20, 'valor'),
+      getRanking('beneficiarios', filters, 20, 'quantidade'),
+      getCargoDistribution(filters),
+      getTrips(filters, 100),
+    ]);
+    return {
+      rankings: { beneficiariosValor, beneficiariosQuantidade },
+      cargoDistribution,
+      trips,
+    };
+  }
+
+  if (activePage === 'mapa') {
+    return { mapPoints: await getMapPoints(filters) };
+  }
+
+  const [valoresAltos, recorrentes, cargosMedia, curtas] = await Promise.all([
+    getOutliers('valores_altos', filters),
+    getOutliers('recorrentes', filters),
+    getOutliers('cargos_media', filters),
+    getOutliers('curtas', filters),
+  ]);
+  return {
+    outliers: {
+      valores_altos: valoresAltos,
+      recorrentes,
+      cargos_media: cargosMedia,
+      curtas,
+    },
+  };
 }

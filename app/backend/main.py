@@ -7,17 +7,24 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.backend.db import close_pool
 from app.backend.queries import get_filter_options
+from app.backend.queries import get_cargo_distribution
 from app.backend.queries import get_kpis
 from app.backend.queries import get_map_points
+from app.backend.queries import get_org_comparison
+from app.backend.queries import get_outliers
 from app.backend.queries import get_ranking
 from app.backend.queries import get_time_series
+from app.backend.queries import get_trip_details
+from app.backend.schemas import DistributionRow
 from app.backend.schemas import FilterOptions
 from app.backend.schemas import FilterParams
 from app.backend.schemas import KpiSummary
 from app.backend.schemas import MapPoint
+from app.backend.schemas import OutlierRow
 from app.backend.schemas import RankingDimension
 from app.backend.schemas import RankingRow
 from app.backend.schemas import TimeSeriesPoint
+from app.backend.schemas import TripDetail
 
 
 app = FastAPI(title="Viagens Gov BR Dashboard API")
@@ -73,9 +80,15 @@ def kpis(filters: FilterParams = Depends(parse_filters)) -> dict:
 def rankings(
     dimension: RankingDimension,
     limit: int = Query(default=20, ge=1, le=100),
+    order_by: str = Query(default="valor", pattern="^(valor|quantidade)$"),
     filters: FilterParams = Depends(parse_filters),
 ) -> list[dict]:
-    return get_ranking(dimension, filters, limit)
+    return get_ranking(dimension, filters, limit, order_by)
+
+
+@app.get("/comparison/orgaos", response_model=list[RankingRow])
+def org_comparison(filters: FilterParams = Depends(parse_filters)) -> list[dict]:
+    return get_org_comparison(filters)
 
 
 @app.get("/timeseries", response_model=list[TimeSeriesPoint])
@@ -86,3 +99,28 @@ def timeseries(filters: FilterParams = Depends(parse_filters)) -> list[dict]:
 @app.get("/map", response_model=list[MapPoint])
 def map_points(filters: FilterParams = Depends(parse_filters)) -> list[dict]:
     return get_map_points(filters)
+
+
+@app.get("/trips", response_model=list[TripDetail])
+def trips(
+    limit: int = Query(default=100, ge=1, le=500),
+    filters: FilterParams = Depends(parse_filters),
+) -> list[dict]:
+    return get_trip_details(filters, limit)
+
+
+@app.get("/distribution/cargos", response_model=list[DistributionRow])
+def cargo_distribution(
+    limit: int = Query(default=30, ge=1, le=100),
+    filters: FilterParams = Depends(parse_filters),
+) -> list[dict]:
+    return get_cargo_distribution(filters, limit)
+
+
+@app.get("/outliers/{kind}", response_model=list[OutlierRow])
+def outliers(
+    kind: str,
+    limit: int = Query(default=30, ge=1, le=100),
+    filters: FilterParams = Depends(parse_filters),
+) -> list[dict]:
+    return get_outliers(filters, kind, limit)

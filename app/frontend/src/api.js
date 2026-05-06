@@ -31,10 +31,10 @@ export function getKpis(filters) {
   return request(`/kpis${query ? `?${query}` : ''}`);
 }
 
-export function getRanking(dimension, filters, limit = 15) {
+export function getRanking(dimension, filters, limit = 15, orderBy = 'valor') {
   const query = buildQuery(filters);
   const sep = query ? '&' : '?';
-  return request(`/rankings/${dimension}${query ? `?${query}` : ''}${sep}limit=${limit}`);
+  return request(`/rankings/${dimension}${query ? `?${query}` : ''}${sep}limit=${limit}&order_by=${orderBy}`);
 }
 
 export function getTimeSeries(filters) {
@@ -45,4 +45,27 @@ export function getTimeSeries(filters) {
 export function getMapPoints(filters) {
   const query = buildQuery(filters);
   return request(`/map${query ? `?${query}` : ''}`);
+}
+
+export function getOrgComparison(filters) {
+  const query = buildQuery(filters);
+  return request(`/comparison/orgaos${query ? `?${query}` : ''}`);
+}
+
+export function getTrips(filters, limit = 100) {
+  const query = buildQuery(filters);
+  const sep = query ? '&' : '?';
+  return request(`/trips${query ? `?${query}` : ''}${sep}limit=${limit}`);
+}
+
+export function getCargoDistribution(filters, limit = 30) {
+  const query = buildQuery(filters);
+  const sep = query ? '&' : '?';
+  return request(`/distribution/cargos${query ? `?${query}` : ''}${sep}limit=${limit}`);
+}
+
+export function getOutliers(kind, filters, limit = 30) {
+  const query = buildQuery(filters);
+  const sep = query ? '&' : '?';
+  return request(`/outliers/${kind}${query ? `?${query}` : ''}${sep}limit=${limit}`);
 }

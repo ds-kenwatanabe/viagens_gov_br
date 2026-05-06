@@ -73,6 +73,29 @@ select {
   gap: 14px;
 }
 
+.page-nav {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.page-nav button {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #334155;
+  cursor: pointer;
+  min-height: 38px;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.page-nav button.active {
+  background: #172033;
+  border-color: #172033;
+  color: #fff;
+}
+
 .filters label {
   color: #344054;
   display: grid;
@@ -225,6 +248,10 @@ select {
   grid-template-columns: minmax(0, 1.35fr) minmax(360px, 0.85fr);
 }
 
+.analytics-grid.single {
+  grid-template-columns: 1fr;
+}
+
 .panel {
   min-width: 0;
   padding: 16px;
@@ -269,9 +296,17 @@ select {
   width: 100%;
 }
 
+.plot.compact {
+  height: 360px;
+}
+
 .table-wrap {
   max-height: 390px;
   overflow: auto;
+}
+
+.detail-table {
+  max-height: 520px;
 }
 
 table {
@@ -292,6 +327,10 @@ td:first-child {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.detail-table td {
+  max-width: 220px;
 }
 
 .map-panel {

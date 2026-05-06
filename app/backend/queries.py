@@ -85,16 +85,37 @@ def get_kpis(filters: FilterParams) -> dict:
         return cursor.fetchone()
 
 
+def get_org_comparison(filters: FilterParams) -> list[dict]:
+    where_sql, params = _build_where(filters)
+    with get_cursor() as cursor:
+        cursor.execute(
+            f"""
+            SELECT COALESCE(orgao_nome, 'Nao informado') AS nome,
+                   COUNT(*) AS quantidade,
+                   COALESCE(SUM(valor_total_viagem), 0) AS valor_total
+              FROM vw_viagens_dashboard
+             {where_sql}
+             GROUP BY COALESCE(orgao_nome, 'Nao informado')
+             ORDER BY valor_total DESC
+             LIMIT 30
+            """,
+            params,
+        )
+        return cursor.fetchall()
+
+
 def get_ranking(
     dimension: RankingDimension,
     filters: FilterParams,
     limit: int = 20,
+    order_by: str = "valor",
 ) -> list[dict]:
     column = RANKING_COLUMNS[dimension]
     where_sql, params = _build_where(filters)
     params.append(limit)
 
     with get_cursor() as cursor:
+        order_sql = "quantidade DESC, valor_total DESC" if order_by == "quantidade" else "valor_total DESC"
         cursor.execute(
             f"""
             SELECT COALESCE({column}, 'Nao informado') AS nome,
@@ -103,7 +124,7 @@ def get_ranking(
               FROM viagens
              {where_sql}
              GROUP BY COALESCE({column}, 'Nao informado')
-             ORDER BY valor_total DESC
+             ORDER BY {order_sql}
              LIMIT %s
             """,
             params,
@@ -130,30 +151,149 @@ def get_time_series(filters: FilterParams) -> list[dict]:
 
 
 def get_map_points(filters: FilterParams) -> list[dict]:
-    where_sql, params = _build_where(filters, table_alias="v")
+    where_sql, params = _build_where(filters)
     with get_cursor() as cursor:
         cursor.execute(
             f"""
-            SELECT l.cidade,
-                   l.estado,
-                   l.pais,
-                   l.latitude::float AS latitude,
-                   l.longitude::float AS longitude,
-                   COUNT(*) AS quantidade,
-                   COALESCE(SUM(v.valor_total_viagem), 0) AS valor_total,
-                   AVG(l.confidence)::float AS confidence
-              FROM viagem_localidades l
-              JOIN viagens v ON v.id = l.viagem_id
+            SELECT id,
+                   orgao_nome,
+                   beneficiario_nome,
+                   motivo,
+                   tipo_viagem,
+                   data_inicio_afastamento,
+                   data_fim_afastamento,
+                   cidade,
+                   estado,
+                   pais,
+                   latitude::float AS latitude,
+                   longitude::float AS longitude,
+                   1 AS quantidade,
+                   COALESCE(valor_total_viagem, 0) AS valor_total,
+                   confidence::float AS confidence
+              FROM vw_mapa_viagens
              {where_sql}
-               AND l.latitude IS NOT NULL
-               AND l.longitude IS NOT NULL
-             GROUP BY l.cidade, l.estado, l.pais, l.latitude, l.longitude
-             ORDER BY quantidade DESC
+             ORDER BY valor_total_viagem DESC NULLS LAST
              LIMIT 500
             """,
             params,
         )
         return cursor.fetchall()
+
+
+def get_trip_details(filters: FilterParams, limit: int = 100) -> list[dict]:
+    where_sql, params = _build_where(filters)
+    params.append(limit)
+    with get_cursor() as cursor:
+        cursor.execute(
+            f"""
+            SELECT id,
+                   orgao_nome,
+                   beneficiario_nome,
+                   cargo_descricao,
+                   tipo_viagem,
+                   motivo,
+                   data_inicio_afastamento,
+                   data_fim_afastamento,
+                   COALESCE(valor_total_viagem, 0) AS valor_total_viagem,
+                   COALESCE(valor_total_diarias, 0) AS valor_total_diarias,
+                   COALESCE(valor_total_passagem, 0) AS valor_total_passagem
+              FROM vw_viagens_dashboard
+             {where_sql}
+             ORDER BY valor_total_viagem DESC NULLS LAST
+             LIMIT %s
+            """,
+            params,
+        )
+        return cursor.fetchall()
+
+
+def get_cargo_distribution(filters: FilterParams, limit: int = 30) -> list[dict]:
+    where_sql, params = _build_where(filters)
+    params.append(limit)
+    with get_cursor() as cursor:
+        cursor.execute(
+            f"""
+            SELECT COALESCE(cargo_descricao, 'Nao informado') AS nome,
+                   COUNT(*) AS quantidade,
+                   COALESCE(AVG(valor_total_viagem), 0) AS valor_medio
+              FROM vw_viagens_dashboard
+             {where_sql}
+             GROUP BY COALESCE(cargo_descricao, 'Nao informado')
+             ORDER BY quantidade DESC
+             LIMIT %s
+            """,
+            params,
+        )
+        return cursor.fetchall()
+
+
+def get_outliers(filters: FilterParams, kind: str, limit: int = 30) -> list[dict]:
+    where_sql, params = _build_where(filters)
+    params.append(limit)
+    query = _outlier_query(kind, where_sql)
+    with get_cursor() as cursor:
+        cursor.execute(query, params)
+        return cursor.fetchall()
+
+
+def _outlier_query(kind: str, where_sql: str) -> str:
+    if kind == "valores_altos":
+        return f"""
+            SELECT CONCAT(id, ' - ', COALESCE(beneficiario_nome, 'Nao informado')) AS nome,
+                   1 AS quantidade,
+                   COALESCE(valor_total_viagem, 0) AS valor_total,
+                   COALESCE(valor_total_viagem, 0) AS valor_medio,
+                   COALESCE(motivo, '') AS detalhe
+              FROM vw_viagens_dashboard
+             {where_sql}
+             ORDER BY valor_total_viagem DESC NULLS LAST
+             LIMIT %s
+        """
+    if kind == "recorrentes":
+        return f"""
+            SELECT COALESCE(beneficiario_nome, 'Nao informado') AS nome,
+                   COUNT(*) AS quantidade,
+                   COALESCE(SUM(valor_total_viagem), 0) AS valor_total,
+                   COALESCE(AVG(valor_total_viagem), 0) AS valor_medio,
+                   MIN(data_inicio_afastamento)::text || ' a ' || MAX(data_inicio_afastamento)::text AS detalhe
+              FROM vw_viagens_dashboard
+             {where_sql}
+             GROUP BY COALESCE(beneficiario_nome, 'Nao informado')
+            HAVING COUNT(*) >= 5
+             ORDER BY quantidade DESC, valor_total DESC
+             LIMIT %s
+        """
+    if kind == "cargos_media":
+        return f"""
+            SELECT COALESCE(cargo_descricao, 'Nao informado') AS nome,
+                   COUNT(*) AS quantidade,
+                   COALESCE(SUM(valor_total_viagem), 0) AS valor_total,
+                   COALESCE(AVG(valor_total_viagem), 0) AS valor_medio,
+                   NULL AS detalhe
+              FROM vw_viagens_dashboard
+             {where_sql}
+             GROUP BY COALESCE(cargo_descricao, 'Nao informado')
+            HAVING COUNT(*) >= 5
+             ORDER BY valor_medio DESC
+             LIMIT %s
+        """
+
+    return f"""
+        SELECT COALESCE(beneficiario_nome, 'Nao informado') AS nome,
+               COUNT(*) AS quantidade,
+               COALESCE(SUM(valor_total_viagem), 0) AS valor_total,
+               COALESCE(AVG(valor_total_viagem), 0) AS valor_medio,
+               'Viagens de ate 2 dias' AS detalhe
+          FROM vw_viagens_dashboard
+         {where_sql}
+           AND data_inicio_afastamento IS NOT NULL
+           AND data_fim_afastamento IS NOT NULL
+           AND data_fim_afastamento - data_inicio_afastamento <= 2
+         GROUP BY COALESCE(beneficiario_nome, 'Nao informado')
+        HAVING COUNT(*) >= 3
+         ORDER BY quantidade DESC, valor_total DESC
+         LIMIT %s
+    """
 
 
 def _build_where(

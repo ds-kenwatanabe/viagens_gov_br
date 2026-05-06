@@ -39,3 +39,49 @@ SELECT orgao_codigo_siafi,
        SUM(valor_total_passagem) AS valor_passagens
   FROM viagens
  GROUP BY orgao_codigo_siafi, orgao_nome, date_trunc('month', data_inicio_afastamento)::date, tipo_viagem;
+
+CREATE OR REPLACE VIEW vw_viagens_dashboard AS
+SELECT
+    id,
+    orgao_codigo_siafi,
+    orgao_nome,
+    orgao_sigla,
+    beneficiario_nome,
+    cargo_descricao,
+    unidade_gestora_nome,
+    tipo_viagem,
+    situacao,
+    motivo,
+    data_inicio_afastamento,
+    data_fim_afastamento,
+    valor_total_diarias,
+    valor_total_passagem,
+    valor_total_viagem,
+    EXTRACT(YEAR FROM data_inicio_afastamento) AS ano,
+    EXTRACT(MONTH FROM data_inicio_afastamento) AS mes
+FROM viagens;
+
+CREATE OR REPLACE VIEW vw_mapa_viagens AS
+SELECT
+    v.id,
+    v.orgao_codigo_siafi,
+    v.orgao_nome,
+    v.orgao_sigla,
+    v.beneficiario_nome,
+    v.cargo_descricao,
+    v.tipo_viagem,
+    v.motivo,
+    v.valor_total_viagem,
+    v.data_inicio_afastamento,
+    v.data_fim_afastamento,
+    l.cidade,
+    l.estado,
+    l.pais,
+    l.latitude,
+    l.longitude,
+    l.confidence
+FROM viagens v
+JOIN viagem_localidades l
+  ON l.viagem_id = v.id
+WHERE l.latitude IS NOT NULL
+  AND l.longitude IS NOT NULL;

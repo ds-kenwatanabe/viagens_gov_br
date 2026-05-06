@@ -26,6 +26,16 @@ export default function TravelMap({ points }) {
             <Popup>
               <strong>{label || 'Localidade'}</strong>
               <br />
+              Beneficiário: {point.beneficiario_nome || 'Não informado'}
+              <br />
+              Órgão: {point.orgao_nome || 'Não informado'}
+              <br />
+              Tipo: {point.tipo_viagem || '-'}
+              <br />
+              Período: {point.data_inicio_afastamento || '-'} a {point.data_fim_afastamento || '-'}
+              <br />
+              Motivo: {point.motivo || '-'}
+              <br />
               Viagens: {point.quantidade}
               <br />
               Valor: {moneyFormatter.format(Number(point.valor_total || 0))}

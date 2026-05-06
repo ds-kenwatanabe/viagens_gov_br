@@ -18,8 +18,8 @@ export default function RankingTable({ rows }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
-            <tr key={row.nome}>
+          {rows.map((row, index) => (
+            <tr key={`${row.nome}-${index}`}>
               <td title={row.nome}>{row.nome}</td>
               <td>{numberFormatter.format(Number(row.quantidade || 0))}</td>
               <td>{moneyFormatter.format(Number(row.valor_total || 0))}</td>

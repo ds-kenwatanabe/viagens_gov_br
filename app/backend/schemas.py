@@ -51,6 +51,13 @@ class TimeSeriesPoint(BaseModel):
 
 
 class MapPoint(BaseModel):
+    id: int | None = None
+    orgao_nome: str | None = None
+    beneficiario_nome: str | None = None
+    motivo: str | None = None
+    tipo_viagem: str | None = None
+    data_inicio_afastamento: date | None = None
+    data_fim_afastamento: date | None = None
     cidade: str | None
     estado: str | None
     pais: str | None
@@ -59,3 +66,31 @@ class MapPoint(BaseModel):
     quantidade: int
     valor_total: Decimal
     confidence: float | None = None
+
+
+class TripDetail(BaseModel):
+    id: int
+    orgao_nome: str | None = None
+    beneficiario_nome: str | None = None
+    cargo_descricao: str | None = None
+    tipo_viagem: str | None = None
+    motivo: str | None = None
+    data_inicio_afastamento: date | None = None
+    data_fim_afastamento: date | None = None
+    valor_total_viagem: Decimal
+    valor_total_diarias: Decimal | None = None
+    valor_total_passagem: Decimal | None = None
+
+
+class DistributionRow(BaseModel):
+    nome: str
+    quantidade: int
+    valor_medio: Decimal
+
+
+class OutlierRow(BaseModel):
+    nome: str
+    quantidade: int | None = None
+    valor_total: Decimal | None = None
+    valor_medio: Decimal | None = None
+    detalhe: str | None = None
