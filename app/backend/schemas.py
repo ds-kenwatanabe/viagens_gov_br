@@ -94,3 +94,22 @@ class OutlierRow(BaseModel):
     valor_total: Decimal | None = None
     valor_medio: Decimal | None = None
     detalhe: str | None = None
+
+
+class QualitySummary(BaseModel):
+    total_viagens: int
+    motivo_vazio: int
+    sem_local_extraido: int
+    geocodificadas: int
+    confianca_media: float | None = None
+
+
+class SourceCount(BaseModel):
+    fonte: str
+    quantidade: int
+
+
+class QualityReport(BaseModel):
+    summary: QualitySummary
+    fontes: list[SourceCount]
+    motivos_sem_local: list[RankingRow]

@@ -319,6 +319,129 @@ def get_outliers(filters: FilterParams, kind: str, limit: int = 30) -> list[dict
         return cursor.fetchall()
 
 
+def get_quality_report(filters: FilterParams, limit: int = 20) -> dict:
+    where_sql, params = _build_where(filters, "v")
+    with get_cursor() as cursor:
+        cursor.execute(
+            f"""
+            WITH base AS (
+                SELECT v.id, v.motivo
+                  FROM viagens v
+                 {where_sql}
+            ),
+            local_stats AS (
+                SELECT l.viagem_id,
+                       BOOL_OR(
+                           COALESCE(NULLIF(l.fonte, ''), 'none') <> 'none'
+                           AND COALESCE(l.local_texto, '') <> '__NO_LOCATION__'
+                       ) AS local_extraido,
+                       BOOL_OR(l.latitude IS NOT NULL AND l.longitude IS NOT NULL) AS geocodificada
+                  FROM viagem_localidades l
+                  JOIN base b ON b.id = l.viagem_id
+                 GROUP BY l.viagem_id
+            ),
+            confidence_stats AS (
+                SELECT AVG(l.confidence)::float AS confianca_media
+                  FROM viagem_localidades l
+                  JOIN base b ON b.id = l.viagem_id
+                 WHERE l.latitude IS NOT NULL
+                   AND l.longitude IS NOT NULL
+            )
+            SELECT COUNT(*) AS total_viagens,
+                   COUNT(*) FILTER (
+                       WHERE motivo IS NULL OR btrim(motivo) = ''
+                   ) AS motivo_vazio,
+                   COUNT(*) FILTER (
+                       WHERE NOT COALESCE(local_stats.local_extraido, false)
+                   ) AS sem_local_extraido,
+                   COUNT(*) FILTER (
+                       WHERE COALESCE(local_stats.geocodificada, false)
+                   ) AS geocodificadas,
+                   MAX(confidence_stats.confianca_media) AS confianca_media
+              FROM base
+              LEFT JOIN local_stats ON local_stats.viagem_id = base.id
+              CROSS JOIN confidence_stats
+            """,
+            params,
+        )
+        summary = cursor.fetchone()
+
+        cursor.execute(
+            f"""
+            WITH base AS (
+                SELECT v.id
+                  FROM viagens v
+                 {where_sql}
+            ),
+            source_counts AS (
+                SELECT CASE
+                           WHEN LOWER(COALESCE(NULLIF(l.fonte, ''), 'none')) IN ('local', 'nominatim')
+                               THEN LOWER(COALESCE(NULLIF(l.fonte, ''), 'none'))
+                           ELSE 'none'
+                       END AS fonte,
+                       COUNT(*) AS quantidade
+                  FROM viagem_localidades l
+                  JOIN base b ON b.id = l.viagem_id
+                 GROUP BY 1
+            ),
+            expected_sources AS (
+                SELECT unnest(ARRAY['local', 'nominatim', 'none']) AS fonte
+            )
+            SELECT expected_sources.fonte,
+                   COALESCE(source_counts.quantidade, 0) AS quantidade
+              FROM expected_sources
+              LEFT JOIN source_counts ON source_counts.fonte = expected_sources.fonte
+             ORDER BY CASE expected_sources.fonte
+                          WHEN 'local' THEN 1
+                          WHEN 'nominatim' THEN 2
+                          ELSE 3
+                      END
+            """,
+            params,
+        )
+        fontes = cursor.fetchall()
+
+        motivo_params = [*params, limit]
+        cursor.execute(
+            f"""
+            WITH base AS (
+                SELECT v.id, v.motivo, v.valor_total_viagem
+                  FROM viagens v
+                 {where_sql}
+            ),
+            local_stats AS (
+                SELECT l.viagem_id,
+                       BOOL_OR(
+                           COALESCE(NULLIF(l.fonte, ''), 'none') <> 'none'
+                           AND COALESCE(l.local_texto, '') <> '__NO_LOCATION__'
+                       ) AS local_extraido
+                  FROM viagem_localidades l
+                  JOIN base b ON b.id = l.viagem_id
+                 GROUP BY l.viagem_id
+            )
+            SELECT COALESCE(NULLIF(btrim(base.motivo), ''), 'NÃ£o informado') AS nome,
+                   COUNT(*) AS quantidade,
+                   COALESCE(SUM(base.valor_total_viagem), 0) AS valor_total
+              FROM base
+              LEFT JOIN local_stats ON local_stats.viagem_id = base.id
+             WHERE NOT COALESCE(local_stats.local_extraido, false)
+               AND base.motivo IS NOT NULL
+               AND btrim(base.motivo) <> ''
+             GROUP BY COALESCE(NULLIF(btrim(base.motivo), ''), 'NÃ£o informado')
+             ORDER BY quantidade DESC, valor_total DESC
+             LIMIT %s
+            """,
+            motivo_params,
+        )
+        motivos_sem_local = cursor.fetchall()
+
+    return {
+        "summary": summary,
+        "fontes": fontes,
+        "motivos_sem_local": motivos_sem_local,
+    }
+
+
 def _outlier_query(kind: str, where_sql: str) -> str:
     if kind == "valores_altos":
         return f"""

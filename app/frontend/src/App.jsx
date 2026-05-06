@@ -6,6 +6,7 @@ import {
   getMapPoints,
   getOrgComparison,
   getOutliers,
+  getQualityReport,
   getRanking,
   getTimeSeries,
   getTrips,
@@ -16,6 +17,7 @@ import MapPage from './pages/MapPage.jsx';
 import OrgaosPage from './pages/OrgaosPage.jsx';
 import OutliersPage from './pages/OutliersPage.jsx';
 import OverviewPage from './pages/OverviewPage.jsx';
+import QualityPage from './pages/QualityPage.jsx';
 
 const initialFilters = {
   orgao: [],
@@ -32,6 +34,7 @@ const pages = [
   ['beneficiarios', 'Beneficiários'],
   ['mapa', 'Mapa'],
   ['outliers', 'Outliers'],
+  ['qualidade', 'Qualidade dos dados'],
 ];
 
 export default function App() {
@@ -51,6 +54,7 @@ export default function App() {
     cargoDistribution: [],
     mapPoints: [],
     outliers: {},
+    quality: null,
   });
 
   const pageTitle = useMemo(
@@ -165,6 +169,7 @@ export default function App() {
           />
         )}
         {activePage === 'outliers' && <OutliersPage outliers={data.outliers} />}
+        {activePage === 'qualidade' && <QualityPage quality={data.quality} />}
       </main>
     </div>
   );
@@ -209,6 +214,10 @@ async function loadPageData(activePage, filters, mapMode) {
 
   if (activePage === 'mapa') {
     return { mapPoints: await getMapPoints(filters, mapMode) };
+  }
+
+  if (activePage === 'qualidade') {
+    return { quality: await getQualityReport(filters) };
   }
 
   const [valoresAltos, recorrentes, cargosMedia, curtas] = await Promise.all([

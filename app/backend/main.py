@@ -12,6 +12,7 @@ from app.backend.queries import get_kpis
 from app.backend.queries import get_map_points
 from app.backend.queries import get_org_comparison
 from app.backend.queries import get_outliers
+from app.backend.queries import get_quality_report
 from app.backend.queries import get_ranking
 from app.backend.queries import search_filter_options
 from app.backend.queries import get_time_series
@@ -23,6 +24,7 @@ from app.backend.schemas import KpiSummary
 from app.backend.schemas import MapPoint
 from app.backend.schemas import OutlierRow
 from app.backend.schemas import Option
+from app.backend.schemas import QualityReport
 from app.backend.schemas import RankingDimension
 from app.backend.schemas import RankingRow
 from app.backend.schemas import TimeSeriesPoint
@@ -141,3 +143,11 @@ def outliers(
     filters: FilterParams = Depends(parse_filters),
 ) -> list[dict]:
     return get_outliers(filters, kind, limit)
+
+
+@app.get("/quality", response_model=QualityReport)
+def quality(
+    limit: int = Query(default=20, ge=1, le=100),
+    filters: FilterParams = Depends(parse_filters),
+) -> dict:
+    return get_quality_report(filters, limit)

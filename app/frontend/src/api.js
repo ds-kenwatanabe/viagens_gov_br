@@ -77,3 +77,9 @@ export function getOutliers(kind, filters, limit = 30) {
   const sep = query ? '&' : '?';
   return request(`/outliers/${kind}${query ? `?${query}` : ''}${sep}limit=${limit}`);
 }
+
+export function getQualityReport(filters, limit = 20) {
+  const query = buildQuery(filters);
+  const sep = query ? '&' : '?';
+  return request(`/quality${query ? `?${query}` : ''}${sep}limit=${limit}`);
+}
