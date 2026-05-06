@@ -1,4 +1,4 @@
-import Plot from 'react-plotly.js';
+import Plot from './Plot.jsx';
 
 export default function BarChart({ rows, xKey = 'valor_total', yKey = 'nome', color = '#2563eb' }) {
   const safeRows = Array.isArray(rows) ? rows : [];
@@ -13,7 +13,7 @@ export default function BarChart({ rows, xKey = 'valor_total', yKey = 'nome', co
       data={[
         {
           x: sortedRows.map((row) => Number(row[xKey] || 0)),
-          y: sortedRows.map((row) => row[yKey]),
+          y: sortedRows.map((row) => row[yKey] || 'Nao informado'),
           type: 'bar',
           orientation: 'h',
           marker: { color },

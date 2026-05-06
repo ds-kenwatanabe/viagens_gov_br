@@ -1,3 +1,5 @@
+import { useMemo, useState } from 'react';
+
 export default function FilterPanel({ filters, options, onChange }) {
   const update = (patch) => onChange({ ...filters, ...patch });
 
@@ -14,7 +16,7 @@ export default function FilterPanel({ filters, options, onChange }) {
   return (
     <div className="filters">
       <label>
-        Período inicial
+        Periodo inicial
         <input
           type="date"
           value={filters.data_inicio}
@@ -23,7 +25,7 @@ export default function FilterPanel({ filters, options, onChange }) {
       </label>
 
       <label>
-        Período final
+        Periodo final
         <input
           type="date"
           value={filters.data_fim}
@@ -44,30 +46,26 @@ export default function FilterPanel({ filters, options, onChange }) {
         </select>
       </label>
 
-      <label>
-        Beneficiário
-        <input
-          type="search"
-          placeholder="Nome"
-          value={filters.beneficiario}
-          onChange={(event) => update({ beneficiario: event.target.value })}
-        />
-      </label>
+      <SearchableOptionList
+        emptyLabel="Todos os beneficiarios"
+        onSelect={(value) => update({ beneficiario: value })}
+        options={options?.beneficiarios || []}
+        selected={filters.beneficiario}
+        title="Beneficiario"
+      />
 
-      <label>
-        Cargo
-        <input
-          type="search"
-          placeholder="Descrição"
-          value={filters.cargo}
-          onChange={(event) => update({ cargo: event.target.value })}
-        />
-      </label>
+      <SearchableOptionList
+        emptyLabel="Todos os cargos"
+        onSelect={(value) => update({ cargo: value })}
+        options={options?.cargos || []}
+        selected={filters.cargo}
+        title="Cargo"
+      />
 
       <div className="orgao-list">
-        <div className="filter-title">Órgãos</div>
+        <div className="filter-title">Orgaos</div>
         <button className="clear-button" type="button" onClick={() => update({ orgao: [] })}>
-          Limpar seleção
+          Limpar selecao
         </button>
         <div className="checkbox-list">
           {(options?.orgaos || []).slice(0, 80).map((option) => (
@@ -81,6 +79,51 @@ export default function FilterPanel({ filters, options, onChange }) {
             </label>
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function SearchableOptionList({ emptyLabel, onSelect, options, selected, title }) {
+  const [query, setQuery] = useState('');
+  const visibleOptions = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    return options
+      .filter((option) => {
+        if (!normalizedQuery) return true;
+        return option.label.toLowerCase().includes(normalizedQuery);
+      })
+      .slice(0, 80);
+  }, [options, query]);
+
+  return (
+    <div className="option-picker">
+      <div className="filter-title">{title}</div>
+      <input
+        aria-label={`Buscar ${title}`}
+        type="search"
+        placeholder="Buscar na lista"
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+      />
+      <button className="clear-button" type="button" onClick={() => onSelect('')}>
+        {emptyLabel}
+      </button>
+      <div className="choice-list">
+        {visibleOptions.map((option) => (
+          <button
+            className={selected === option.value ? 'choice-row active' : 'choice-row'}
+            key={option.value}
+            onClick={() => onSelect(option.value)}
+            title={option.label}
+            type="button"
+          >
+            {option.label}
+          </button>
+        ))}
+        {!visibleOptions.length && (
+          <div className="empty-choice">Nenhuma opcao encontrada.</div>
+        )}
       </div>
     </div>
   );

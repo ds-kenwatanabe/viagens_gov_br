@@ -1,12 +1,18 @@
-import Plot from 'react-plotly.js';
+import Plot from './Plot.jsx';
 
 export default function TimeSeriesChart({ data }) {
+  const safeData = Array.isArray(data) ? data : [];
+
+  if (!safeData.length) {
+    return <div className="component-loading">Sem dados para o filtro atual.</div>;
+  }
+
   return (
     <Plot
       data={[
         {
-          x: data.map((item) => item.periodo),
-          y: data.map((item) => Number(item.valor_total || 0)),
+          x: safeData.map((item) => item.periodo),
+          y: safeData.map((item) => Number(item.valor_total || 0)),
           type: 'scatter',
           mode: 'lines+markers',
           name: 'Valor total',
@@ -15,8 +21,8 @@ export default function TimeSeriesChart({ data }) {
           yaxis: 'y',
         },
         {
-          x: data.map((item) => item.periodo),
-          y: data.map((item) => Number(item.quantidade || 0)),
+          x: safeData.map((item) => item.periodo),
+          y: safeData.map((item) => Number(item.quantidade || 0)),
           type: 'bar',
           name: 'Viagens',
           marker: { color: 'rgba(245, 158, 11, 0.45)' },

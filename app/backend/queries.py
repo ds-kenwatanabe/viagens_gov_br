@@ -29,10 +29,13 @@ def get_filter_options() -> dict:
 
         cursor.execute(
             """
-            SELECT DISTINCT beneficiario_nome AS value, beneficiario_nome AS label
+            SELECT beneficiario_nome AS value,
+                   beneficiario_nome || ' (' || COUNT(*)::text || ')' AS label
               FROM viagens
              WHERE beneficiario_nome IS NOT NULL
-             ORDER BY beneficiario_nome
+               AND beneficiario_nome <> ''
+             GROUP BY beneficiario_nome
+             ORDER BY COUNT(*) DESC, beneficiario_nome
              LIMIT 500
             """
         )
@@ -40,10 +43,13 @@ def get_filter_options() -> dict:
 
         cursor.execute(
             """
-            SELECT DISTINCT cargo_descricao AS value, cargo_descricao AS label
+            SELECT cargo_descricao AS value,
+                   cargo_descricao || ' (' || COUNT(*)::text || ')' AS label
               FROM viagens
              WHERE cargo_descricao IS NOT NULL
-             ORDER BY cargo_descricao
+               AND cargo_descricao <> ''
+             GROUP BY cargo_descricao
+             ORDER BY COUNT(*) DESC, cargo_descricao
              LIMIT 500
             """
         )
