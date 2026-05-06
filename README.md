@@ -2,7 +2,7 @@
 
 Este projeto utiliza a API do [Portal da Transparência](https://portaldatransparencia.gov.br) para consultar dados de viagens de funcionários do governo brasileiro e inserir os registros em um banco PostgreSQL.
 
-Os dados usados no relatório Power BI correspondem a viagens coletadas entre 01/01/2023 e 30/04/2024 para órgãos selecionados por código SIAFI.
+Os dados coletados alimentam o banco PostgreSQL e o dashboard web local incluído neste repositório.
 
 ## Estrutura do projeto
 
@@ -96,35 +96,6 @@ Códigos usados no projeto:
 - `54000` - Ministério do Turismo
 
 Alguns códigos consultados podem não estar disponíveis na API.
-
-## Relatório Power BI
-
-O arquivo `relatorio_viagens.pbix` contém o relatório com análises de gastos de viagens. As imagens abaixo mostram as principais páginas.
-
-### Tela de início
-
-![inicio](pbi_images/inicio.png)
-
-### Top 10 Beneficiários
-
-![top10_1](pbi_images/top10_1.png)
-![top10_2](pbi_images/top10_2.png)
-![top10_3](pbi_images/top10_3.png)
-![top10_4](pbi_images/top10_4.png)
-
-### Top 100 Beneficiários
-
-![top100_1](pbi_images/top100_1.png)
-![top100_2](pbi_images/top100_2.png)
-![top100_3](pbi_images/top100_3.png)
-![top100_4](pbi_images/top100_4.png)
-![top100_5](pbi_images/top100_5.png)
-![top100_6](pbi_images/top100_6.png)
-
-### Histograma
-
-![hist_1](pbi_images/hist_1.png)
-![hist_2](pbi_images/hist_2.png)
 
 ## Referências
 
