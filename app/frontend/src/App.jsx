@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import {
   getFilters,
   getKpis,
@@ -7,10 +7,12 @@ import {
   getTimeSeries,
 } from './api.js';
 import FilterPanel from './components/FilterPanel.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 import KpiGrid from './components/KpiGrid.jsx';
 import RankingTable from './components/RankingTable.jsx';
-import TimeSeriesChart from './components/TimeSeriesChart.jsx';
-import TravelMap from './components/TravelMap.jsx';
+
+const TimeSeriesChart = lazy(() => import('./components/TimeSeriesChart.jsx'));
+const TravelMap = lazy(() => import('./components/TravelMap.jsx'));
 
 const initialFilters = {
   orgao: [],
@@ -109,7 +111,11 @@ export default function App() {
             <div className="panel-header">
               <h3>Série temporal</h3>
             </div>
-            <TimeSeriesChart data={timeSeries} />
+            <ErrorBoundary fallback="Falha ao carregar o gráfico temporal.">
+              <Suspense fallback={<div className="component-loading">Carregando gráfico</div>}>
+                <TimeSeriesChart data={timeSeries} />
+              </Suspense>
+            </ErrorBoundary>
           </div>
 
           <div className="panel">
@@ -135,7 +141,11 @@ export default function App() {
             <div className="panel-header">
               <h3>Mapa geográfico</h3>
             </div>
-            <TravelMap points={mapPoints} />
+            <ErrorBoundary fallback="Falha ao carregar o mapa.">
+              <Suspense fallback={<div className="component-loading">Carregando mapa</div>}>
+                <TravelMap points={mapPoints} />
+              </Suspense>
+            </ErrorBoundary>
           </div>
         </section>
       </main>
