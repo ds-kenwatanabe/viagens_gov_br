@@ -41,6 +41,7 @@ def extract_locations(text: str | None) -> list[dict[str, str | None]]:
         key = _normalize(f"{city}/{state}")
         if key not in seen:
             seen.add(key)
+            seen.add(_normalize(city))
             locations.append(
                 {
                     "local_texto": f"{city}/{state}",
