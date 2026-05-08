@@ -6,6 +6,11 @@ export default function OutliersPage({ outliers }) {
     ['recorrentes', 'Viagens recorrentes'],
     ['cargos_media', 'Cargos com maiores médias'],
     ['curtas', 'Muitas viagens curtas'],
+    ['beneficiario_mes', 'Beneficiário com maior valor por mês'],
+    ['orgao_aumento_mensal', 'Órgão com maior aumento mês contra mês'],
+    ['internacionais_caras', 'Viagens internacionais mais caras'],
+    ['passagem_alta_diaria_baixa', 'Passagem alta e diária baixa'],
+    ['acima_percentis', 'Valor total acima do p95/p99'],
   ];
 
   return (

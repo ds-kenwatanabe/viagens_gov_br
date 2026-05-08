@@ -505,6 +505,122 @@ def _outlier_query(kind: str, where_sql: str) -> str:
              LIMIT %s
         """
 
+    if kind == "beneficiario_mes":
+        return f"""
+            WITH monthly AS (
+                SELECT date_trunc('month', data_inicio_afastamento)::date AS periodo,
+                       COALESCE(beneficiario_nome, 'Não informado') AS nome,
+                       COUNT(*) AS quantidade,
+                       COALESCE(SUM(valor_total_viagem), 0) AS valor_total,
+                       COALESCE(AVG(valor_total_viagem), 0) AS valor_medio
+                  FROM vw_viagens_dashboard
+                 {where_sql}
+                 GROUP BY date_trunc('month', data_inicio_afastamento)::date,
+                          COALESCE(beneficiario_nome, 'Não informado')
+            ),
+            ranked AS (
+                SELECT *,
+                       ROW_NUMBER() OVER (PARTITION BY periodo ORDER BY valor_total DESC) AS rank_mes
+                  FROM monthly
+            )
+            SELECT nome,
+                   quantidade,
+                   valor_total,
+                   valor_medio,
+                   periodo::text AS detalhe
+              FROM ranked
+             WHERE rank_mes = 1
+             ORDER BY periodo DESC
+             LIMIT %s
+        """
+    if kind == "orgao_aumento_mensal":
+        return f"""
+            WITH monthly AS (
+                SELECT date_trunc('month', data_inicio_afastamento)::date AS periodo,
+                       COALESCE(orgao_nome, 'Não informado') AS nome,
+                       COALESCE(SUM(valor_total_viagem), 0) AS valor_total
+                  FROM vw_viagens_dashboard
+                 {where_sql}
+                 GROUP BY date_trunc('month', data_inicio_afastamento)::date,
+                          COALESCE(orgao_nome, 'Não informado')
+            ),
+            deltas AS (
+                SELECT nome,
+                       periodo,
+                       valor_total,
+                       LAG(valor_total) OVER (PARTITION BY nome ORDER BY periodo) AS valor_anterior
+                  FROM monthly
+            )
+            SELECT nome,
+                   1 AS quantidade,
+                   valor_total,
+                   valor_total - COALESCE(valor_anterior, 0) AS valor_medio,
+                   periodo::text || ' vs mês anterior: ' || COALESCE(valor_anterior, 0)::text AS detalhe
+              FROM deltas
+             WHERE valor_anterior IS NOT NULL
+               AND valor_total > valor_anterior
+             ORDER BY valor_total - valor_anterior DESC
+             LIMIT %s
+        """
+    if kind == "internacionais_caras":
+        return f"""
+            SELECT CONCAT(id, ' - ', COALESCE(beneficiario_nome, 'Não informado')) AS nome,
+                   1 AS quantidade,
+                   COALESCE(valor_total_viagem, 0) AS valor_total,
+                   COALESCE(valor_total_viagem, 0) AS valor_medio,
+                   COALESCE(orgao_sigla, orgao_nome, '') || ' | ' ||
+                       COALESCE(data_inicio_afastamento::text, '') || ' a ' ||
+                       COALESCE(data_fim_afastamento::text, '') AS detalhe
+              FROM vw_viagens_dashboard
+             {where_sql}
+               AND tipo_viagem = 'Internacional'
+             ORDER BY valor_total_viagem DESC NULLS LAST
+             LIMIT %s
+        """
+    if kind == "passagem_alta_diaria_baixa":
+        return f"""
+            SELECT CONCAT(id, ' - ', COALESCE(beneficiario_nome, 'Não informado')) AS nome,
+                   1 AS quantidade,
+                   COALESCE(valor_total_viagem, 0) AS valor_total,
+                   COALESCE(valor_total_passagem, 0) AS valor_medio,
+                   'Passagem: ' || COALESCE(valor_total_passagem, 0)::text ||
+                       ' | Diárias: ' || COALESCE(valor_total_diarias, 0)::text AS detalhe
+              FROM vw_viagens_dashboard
+             {where_sql}
+               AND COALESCE(valor_total_passagem, 0) >= 5000
+               AND COALESCE(valor_total_diarias, 0) <= 1000
+             ORDER BY valor_total_passagem DESC NULLS LAST
+             LIMIT %s
+        """
+    if kind == "acima_percentis":
+        return f"""
+            WITH base AS (
+                SELECT *
+                  FROM vw_viagens_dashboard
+                 {where_sql}
+            ),
+            thresholds AS (
+                SELECT percentile_cont(0.95) WITHIN GROUP (ORDER BY valor_total_viagem) AS p95,
+                       percentile_cont(0.99) WITHIN GROUP (ORDER BY valor_total_viagem) AS p99
+                  FROM base
+                 WHERE valor_total_viagem IS NOT NULL
+            )
+            SELECT CONCAT(base.id, ' - ', COALESCE(base.beneficiario_nome, 'Não informado')) AS nome,
+                   1 AS quantidade,
+                   COALESCE(base.valor_total_viagem, 0) AS valor_total,
+                   COALESCE(base.valor_total_viagem, 0) AS valor_medio,
+                   CASE
+                       WHEN base.valor_total_viagem >= thresholds.p99 THEN 'Acima do p99'
+                       ELSE 'Acima do p95'
+                   END || ' | p95: ' || COALESCE(thresholds.p95, 0)::numeric(18,2)::text ||
+                   ' | p99: ' || COALESCE(thresholds.p99, 0)::numeric(18,2)::text AS detalhe
+              FROM base
+              CROSS JOIN thresholds
+             WHERE base.valor_total_viagem >= thresholds.p95
+             ORDER BY base.valor_total_viagem DESC NULLS LAST
+             LIMIT %s
+        """
+
     return f"""
         SELECT COALESCE(beneficiario_nome, 'Não informado') AS nome,
                COUNT(*) AS quantidade,

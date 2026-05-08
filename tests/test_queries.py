@@ -68,6 +68,21 @@ class QueryBuilderTest(unittest.TestCase):
         self.assertEqual(cursor.execute.call_args.args[1], [497726197])
         self.assertIn("FROM viagem_localidades", cursor.execute.call_args.args[0])
 
+    def test_outlier_query_supports_new_kinds(self):
+        cases = {
+            "beneficiario_mes": "ROW_NUMBER() OVER (PARTITION BY periodo",
+            "orgao_aumento_mensal": "LAG(valor_total)",
+            "internacionais_caras": "tipo_viagem = 'Internacional'",
+            "passagem_alta_diaria_baixa": "valor_total_passagem",
+            "acima_percentis": "percentile_cont(0.95)",
+        }
+
+        for kind, expected_sql in cases.items():
+            with self.subTest(kind=kind):
+                query = queries._outlier_query(kind, "WHERE 1 = 1")
+                self.assertIn(expected_sql, query)
+                self.assertIn("LIMIT %s", query)
+
 
 if __name__ == "__main__":
     unittest.main()

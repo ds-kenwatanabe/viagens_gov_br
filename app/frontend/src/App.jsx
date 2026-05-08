@@ -222,11 +222,26 @@ async function loadPageData(activePage, filters, mapMode) {
     return { quality: await getQualityReport(filters) };
   }
 
-  const [valoresAltos, recorrentes, cargosMedia, curtas] = await Promise.all([
+  const [
+    valoresAltos,
+    recorrentes,
+    cargosMedia,
+    curtas,
+    beneficiarioMes,
+    orgaoAumentoMensal,
+    internacionaisCaras,
+    passagemAltaDiariaBaixa,
+    acimaPercentis,
+  ] = await Promise.all([
     getOutliers('valores_altos', filters),
     getOutliers('recorrentes', filters),
     getOutliers('cargos_media', filters),
     getOutliers('curtas', filters),
+    getOutliers('beneficiario_mes', filters),
+    getOutliers('orgao_aumento_mensal', filters),
+    getOutliers('internacionais_caras', filters),
+    getOutliers('passagem_alta_diaria_baixa', filters),
+    getOutliers('acima_percentis', filters),
   ]);
   return {
     outliers: {
@@ -234,6 +249,11 @@ async function loadPageData(activePage, filters, mapMode) {
       recorrentes,
       cargos_media: cargosMedia,
       curtas,
+      beneficiario_mes: beneficiarioMes,
+      orgao_aumento_mensal: orgaoAumentoMensal,
+      internacionais_caras: internacionaisCaras,
+      passagem_alta_diaria_baixa: passagemAltaDiariaBaixa,
+      acima_percentis: acimaPercentis,
     },
   };
 }

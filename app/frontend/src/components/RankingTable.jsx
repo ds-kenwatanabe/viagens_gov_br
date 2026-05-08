@@ -8,6 +8,7 @@ const numberFormatter = new Intl.NumberFormat('pt-BR');
 
 export default function RankingTable({ rows, onSelect, selectedName }) {
   const safeRows = Array.isArray(rows) ? rows : [];
+  const hasDetail = safeRows.some((row) => row.detalhe);
 
   return (
     <div className="table-wrap">
@@ -17,6 +18,7 @@ export default function RankingTable({ rows, onSelect, selectedName }) {
             <th>Nome</th>
             <th>Viagens</th>
             <th>Valor</th>
+            {hasDetail && <th>Detalhe</th>}
           </tr>
         </thead>
         <tbody>
@@ -29,11 +31,12 @@ export default function RankingTable({ rows, onSelect, selectedName }) {
               <td title={row.nome}>{row.nome}</td>
               <td>{numberFormatter.format(Number(row.quantidade || 0))}</td>
               <td>{moneyFormatter.format(Number(row.valor_total || 0))}</td>
+              {hasDetail && <td title={row.detalhe}>{row.detalhe || '-'}</td>}
             </tr>
           ))}
           {!safeRows.length && (
             <tr>
-              <td colSpan="3">Sem dados para o filtro atual.</td>
+              <td colSpan={hasDetail ? 4 : 3}>Sem dados para o filtro atual.</td>
             </tr>
           )}
         </tbody>
