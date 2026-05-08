@@ -357,6 +357,56 @@ def get_trip_details(filters: FilterParams, limit: int = 100) -> list[dict]:
         return cursor.fetchall()
 
 
+def get_org_beneficiary_trip_export(filters: FilterParams, limit: int = 5000) -> list[dict]:
+    where_sql, params = _build_where(filters)
+    params.append(limit)
+    with get_cursor() as cursor:
+        cursor.execute(
+            f"""
+            WITH selected AS (
+                SELECT *
+                  FROM vw_viagens_dashboard
+                 {where_sql}
+                 ORDER BY orgao_nome,
+                          beneficiario_nome,
+                          data_inicio_afastamento DESC NULLS LAST,
+                          valor_total_viagem DESC NULLS LAST
+                 LIMIT %s
+            )
+            SELECT orgao_codigo_siafi,
+                   orgao_nome,
+                   orgao_sigla,
+                   beneficiario_nome,
+                   COUNT(*) OVER (
+                       PARTITION BY orgao_nome, beneficiario_nome
+                   ) AS beneficiario_numero_viagens,
+                   COALESCE(
+                       SUM(valor_total_viagem) OVER (
+                           PARTITION BY orgao_nome, beneficiario_nome
+                       ),
+                       0
+                   ) AS beneficiario_valor_total,
+                   id AS viagem_id,
+                   cargo_descricao,
+                   tipo_viagem,
+                   situacao,
+                   data_inicio_afastamento,
+                   data_fim_afastamento,
+                   motivo,
+                   COALESCE(valor_total_viagem, 0) AS valor_total_viagem,
+                   COALESCE(valor_total_diarias, 0) AS valor_total_diarias,
+                   COALESCE(valor_total_passagem, 0) AS valor_total_passagem
+              FROM selected
+             ORDER BY orgao_nome,
+                      beneficiario_nome,
+                      data_inicio_afastamento DESC NULLS LAST,
+                      valor_total_viagem DESC NULLS LAST
+            """,
+            params,
+        )
+        return cursor.fetchall()
+
+
 def get_trip_locations(trip_id: int) -> list[dict]:
     with get_cursor() as cursor:
         cursor.execute(

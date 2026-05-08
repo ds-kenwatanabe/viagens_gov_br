@@ -15,6 +15,7 @@ from app.backend.queries import get_kpis
 from app.backend.queries import get_map_points
 from app.backend.queries import get_map_summary
 from app.backend.queries import get_org_comparison
+from app.backend.queries import get_org_beneficiary_trip_export
 from app.backend.queries import get_outliers
 from app.backend.queries import get_quality_report
 from app.backend.queries import get_ranking
@@ -77,6 +78,25 @@ MAP_EXPORT_COLUMNS = [
 ]
 
 RANKING_EXPORT_COLUMNS = ["nome", "quantidade", "valor_total"]
+
+ORG_BENEFICIARY_TRIP_EXPORT_COLUMNS = [
+    "orgao_codigo_siafi",
+    "orgao_nome",
+    "orgao_sigla",
+    "beneficiario_nome",
+    "beneficiario_numero_viagens",
+    "beneficiario_valor_total",
+    "viagem_id",
+    "cargo_descricao",
+    "tipo_viagem",
+    "situacao",
+    "data_inicio_afastamento",
+    "data_fim_afastamento",
+    "motivo",
+    "valor_total_viagem",
+    "valor_total_diarias",
+    "valor_total_passagem",
+]
 
 
 def parse_filters(
@@ -251,4 +271,20 @@ def export_ranking_csv(
         content=csv_content,
         media_type="text/csv; charset=utf-8",
         headers=csv_headers("ranking.csv"),
+    )
+
+
+@app.get("/export/orgao-beneficiario-viagem.csv")
+def export_org_beneficiary_trip_csv(
+    limit: int = Query(default=5000, ge=1, le=100000),
+    filters: FilterParams = Depends(parse_filters),
+) -> Response:
+    csv_content = rows_to_csv(
+        get_org_beneficiary_trip_export(filters, limit),
+        ORG_BENEFICIARY_TRIP_EXPORT_COLUMNS,
+    )
+    return Response(
+        content=csv_content,
+        media_type="text/csv; charset=utf-8",
+        headers=csv_headers("orgao-beneficiario-viagem.csv"),
     )

@@ -100,6 +100,35 @@ class QueryBuilderTest(unittest.TestCase):
         self.assertIn("GROUP BY pais", sql)
         self.assertEqual(params, [25])
 
+    def test_org_beneficiary_trip_export_builds_hierarchical_query(self):
+        cursor = Mock()
+        cursor.fetchall.return_value = []
+        context = Mock()
+        context.__enter__ = Mock(return_value=cursor)
+        context.__exit__ = Mock(return_value=None)
+
+        filters = FilterParams(
+            orgao=["35000"],
+            beneficiario="Maria",
+            data_inicio=date(2026, 4, 1),
+            data_fim=date(2026, 4, 30),
+        )
+
+        with patch.object(queries, "get_cursor", return_value=context):
+            queries.get_org_beneficiary_trip_export(filters, limit=10)
+
+        sql = cursor.execute.call_args.args[0]
+        params = cursor.execute.call_args.args[1]
+        self.assertIn("WITH selected AS", sql)
+        self.assertIn("COUNT(*) OVER", sql)
+        self.assertIn("id AS viagem_id", sql)
+        self.assertIn("beneficiario_numero_viagens", sql)
+        self.assertIn("PARTITION BY orgao_nome, beneficiario_nome", sql)
+        self.assertEqual(
+            params,
+            [["35000"], "%Maria%", date(2026, 4, 1), date(2026, 4, 30), 10],
+        )
+
     def test_outlier_query_supports_new_kinds(self):
         cases = {
             "beneficiario_mes": "ROW_NUMBER() OVER (PARTITION BY periodo",
