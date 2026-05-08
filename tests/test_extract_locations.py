@@ -30,6 +30,19 @@ class ExtractLocationsTest(unittest.TestCase):
             locations,
         )
 
+    def test_extracts_accented_known_location_once(self):
+        locations = extract_locations("Reuniao em Brasília/DF e agenda em Brasilia.")
+
+        brasilia_locations = [
+            location for location in locations if location["cidade"] in {"Brasília", "Brasilia"}
+        ]
+        self.assertEqual(len(brasilia_locations), 1)
+        self.assertEqual(brasilia_locations[0]["estado"], "DF")
+
+    def test_returns_empty_list_for_empty_reason(self):
+        self.assertEqual(extract_locations(None), [])
+        self.assertEqual(extract_locations(""), [])
+
 
 if __name__ == "__main__":
     unittest.main()
