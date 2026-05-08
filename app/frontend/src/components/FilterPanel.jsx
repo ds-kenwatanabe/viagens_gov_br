@@ -17,36 +17,39 @@ export default function FilterPanel({ filters, options, onChange }) {
 
   return (
     <div className="filters">
-      <label>
-        Período inicial
-        <input
-          type="date"
-          value={filters.data_inicio}
-          onChange={(event) => update({ data_inicio: event.target.value })}
-        />
-      </label>
+      <div className="filter-section">
+        <div className="filter-section-title">Período e tipo</div>
+        <label>
+          Período inicial
+          <input
+            type="date"
+            value={filters.data_inicio}
+            onChange={(event) => update({ data_inicio: event.target.value })}
+          />
+        </label>
 
-      <label>
-        Período final
-        <input
-          type="date"
-          value={filters.data_fim}
-          onChange={(event) => update({ data_fim: event.target.value })}
-        />
-      </label>
+        <label>
+          Período final
+          <input
+            type="date"
+            value={filters.data_fim}
+            onChange={(event) => update({ data_fim: event.target.value })}
+          />
+        </label>
 
-      <label>
-        Tipo de viagem
-        <select
-          value={filters.tipo_viagem}
-          onChange={(event) => update({ tipo_viagem: event.target.value })}
-        >
-          <option value="">Todos</option>
-          {(options?.tipos_viagem || []).map((option) => (
-            <option key={option.value} value={option.value}>{option.label}</option>
-          ))}
-        </select>
-      </label>
+        <label>
+          Tipo de viagem
+          <select
+            value={filters.tipo_viagem}
+            onChange={(event) => update({ tipo_viagem: event.target.value })}
+          >
+            <option value="">Todos</option>
+            {(options?.tipos_viagem || []).map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </label>
+      </div>
 
       <SearchableOptionList
         emptyLabel="Todos os beneficiários"
@@ -66,17 +69,19 @@ export default function FilterPanel({ filters, options, onChange }) {
         title="Cargo"
       />
 
-      <label>
-        Motivo contém
-        <input
-          type="search"
-          placeholder="evento, reunião, missão..."
-          value={filters.motivo_contem}
-          onChange={(event) => update({ motivo_contem: event.target.value })}
-        />
-      </label>
+      <div className="filter-section">
+        <label>
+          Motivo contém
+          <input
+            type="search"
+            placeholder="evento, reunião, missão..."
+            value={filters.motivo_contem}
+            onChange={(event) => update({ motivo_contem: event.target.value })}
+          />
+        </label>
+      </div>
 
-      <div className="orgao-list">
+      <div className="filter-section orgao-list">
         <div className="filter-title">Órgãos</div>
         <button className="clear-button" type="button" onClick={() => update({ orgao: [] })}>
           Limpar seleção
@@ -147,7 +152,7 @@ function SearchableOptionList({ emptyLabel, kind, onSelect, options, selected, t
   const canApplyText = trimmedQuery && selected !== trimmedQuery;
 
   return (
-    <div className="option-picker">
+    <div className="filter-section option-picker">
       <div className="filter-title">{title}</div>
       <input
         aria-label={`Buscar ${title}`}

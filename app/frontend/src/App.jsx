@@ -113,7 +113,6 @@ export default function App() {
           <span className="brand-mark">VG</span>
           <div>
             <h1>Viagens Gov BR</h1>
-            <p>Dashboard local PostgreSQL</p>
           </div>
         </div>
 
