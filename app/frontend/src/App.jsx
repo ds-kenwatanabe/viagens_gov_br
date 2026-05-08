@@ -148,6 +148,7 @@ export default function App() {
         )}
         {activePage === 'orgaos' && (
           <OrgaosPage
+            filters={filters}
             rankings={data.rankings}
             comparison={data.comparison}
             trips={data.trips}

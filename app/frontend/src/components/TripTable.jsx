@@ -16,7 +16,7 @@ const columns = [
   { key: 'valor_total_viagem', label: 'Valor', type: 'number' },
 ];
 
-export default function TripTable({ rows }) {
+export default function TripTable({ rows, onSelect, selectedId }) {
   const safeRows = Array.isArray(rows) ? rows : [];
   const [sortConfig, setSortConfig] = useState({
     direction: 'desc',
@@ -58,7 +58,11 @@ export default function TripTable({ rows }) {
         </thead>
         <tbody>
           {sortedRows.map((row) => (
-            <tr key={row.id}>
+            <tr
+              className={selectedId === row.id ? 'selectable-row active' : onSelect ? 'selectable-row' : ''}
+              key={row.id}
+              onClick={() => onSelect?.(row)}
+            >
               <td title={row.beneficiario_nome}>{row.beneficiario_nome || 'Não informado'}</td>
               <td title={row.orgao_nome}>{row.orgao_nome || 'Não informado'}</td>
               <td title={row.cargo_descricao}>{row.cargo_descricao || 'Não informado'}</td>

@@ -290,6 +290,27 @@ def get_trip_details(filters: FilterParams, limit: int = 100) -> list[dict]:
         return cursor.fetchall()
 
 
+def get_trip_locations(trip_id: int) -> list[dict]:
+    with get_cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT local_texto,
+                   cidade,
+                   estado,
+                   pais,
+                   latitude::float AS latitude,
+                   longitude::float AS longitude,
+                   confidence::float AS confidence,
+                   fonte
+              FROM viagem_localidades
+             WHERE viagem_id = %s
+             ORDER BY fonte NULLS LAST, local_texto
+            """,
+            [trip_id],
+        )
+        return cursor.fetchall()
+
+
 def get_cargo_distribution(filters: FilterParams, limit: int = 30) -> list[dict]:
     where_sql, params = _build_where(filters)
     params.append(limit)
@@ -513,6 +534,9 @@ def _build_where(
     if filters.orgao:
         clauses.append(f"{prefix}orgao_codigo_siafi = ANY(%s)")
         params.append(filters.orgao)
+    if filters.orgao_nome:
+        clauses.append(f"{prefix}orgao_nome = %s")
+        params.append(filters.orgao_nome)
     if filters.beneficiario:
         clauses.append(f"{prefix}beneficiario_nome ILIKE %s")
         params.append(f"%{filters.beneficiario}%")

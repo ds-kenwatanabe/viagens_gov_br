@@ -17,6 +17,7 @@ from app.backend.queries import get_ranking
 from app.backend.queries import search_filter_options
 from app.backend.queries import get_time_series
 from app.backend.queries import get_trip_details
+from app.backend.queries import get_trip_locations
 from app.backend.schemas import DistributionRow
 from app.backend.schemas import FilterOptions
 from app.backend.schemas import FilterParams
@@ -29,6 +30,7 @@ from app.backend.schemas import RankingDimension
 from app.backend.schemas import RankingRow
 from app.backend.schemas import TimeSeriesPoint
 from app.backend.schemas import TripDetail
+from app.backend.schemas import TripLocation
 
 
 app = FastAPI(title="Viagens Gov BR Dashboard API")
@@ -44,6 +46,7 @@ app.add_middleware(
 
 def parse_filters(
     orgao: Annotated[list[str] | None, Query()] = None,
+    orgao_nome: str | None = None,
     beneficiario: str | None = None,
     cargo: str | None = None,
     motivo_contem: str | None = None,
@@ -54,6 +57,7 @@ def parse_filters(
 ) -> FilterParams:
     return FilterParams(
         orgao=orgao or [],
+        orgao_nome=orgao_nome,
         beneficiario=beneficiario,
         cargo=cargo,
         motivo_contem=motivo_contem or motivo_contem_alias,
@@ -129,6 +133,11 @@ def trips(
     filters: FilterParams = Depends(parse_filters),
 ) -> list[dict]:
     return get_trip_details(filters, limit)
+
+
+@app.get("/trips/{trip_id}/locations", response_model=list[TripLocation])
+def trip_locations(trip_id: int) -> list[dict]:
+    return get_trip_locations(trip_id)
 
 
 @app.get("/distribution/cargos", response_model=list[DistributionRow])

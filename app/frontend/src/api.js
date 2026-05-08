@@ -7,7 +7,7 @@ function buildQuery(filters = {}) {
     if (orgao) params.append('orgao', orgao);
   });
 
-  ['beneficiario', 'cargo', 'motivo_contem', 'tipo_viagem', 'data_inicio', 'data_fim'].forEach((key) => {
+  ['orgao_nome', 'beneficiario', 'cargo', 'motivo_contem', 'tipo_viagem', 'data_inicio', 'data_fim'].forEach((key) => {
     if (filters[key]) params.set(key, filters[key]);
   });
 
@@ -64,6 +64,10 @@ export function getTrips(filters, limit = 100) {
   const query = buildQuery(filters);
   const sep = query ? '&' : '?';
   return request(`/trips${query ? `?${query}` : ''}${sep}limit=${limit}`);
+}
+
+export function getTripLocations(tripId) {
+  return request(`/trips/${tripId}/locations`);
 }
 
 export function getCargoDistribution(filters, limit = 30) {

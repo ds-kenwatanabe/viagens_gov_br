@@ -11,6 +11,7 @@ RankingDimension = Literal["beneficiarios", "orgaos", "cargos", "ugs"]
 
 class FilterParams(BaseModel):
     orgao: list[str] = Field(default_factory=list)
+    orgao_nome: str | None = None
     beneficiario: str | None = None
     cargo: str | None = None
     motivo_contem: str | None = None
@@ -81,6 +82,17 @@ class TripDetail(BaseModel):
     valor_total_viagem: Decimal
     valor_total_diarias: Decimal | None = None
     valor_total_passagem: Decimal | None = None
+
+
+class TripLocation(BaseModel):
+    local_texto: str | None = None
+    cidade: str | None = None
+    estado: str | None = None
+    pais: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    confidence: float | None = None
+    fonte: str | None = None
 
 
 class DistributionRow(BaseModel):
