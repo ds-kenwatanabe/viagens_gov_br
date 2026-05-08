@@ -70,6 +70,19 @@ class MapPoint(BaseModel):
     confidence: float | None = None
 
 
+class MapSummaryPoint(BaseModel):
+    group_by: Literal["city", "country"]
+    label: str
+    cidade: str | None = None
+    estado: str | None = None
+    pais: str | None = None
+    latitude: float
+    longitude: float
+    quantidade: int
+    valor_total: Decimal
+    confidence: float | None = None
+
+
 class TripDetail(BaseModel):
     id: int
     orgao_nome: str | None = None

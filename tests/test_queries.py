@@ -68,6 +68,38 @@ class QueryBuilderTest(unittest.TestCase):
         self.assertEqual(cursor.execute.call_args.args[1], [497726197])
         self.assertIn("FROM viagem_localidades", cursor.execute.call_args.args[0])
 
+    def test_get_map_city_summary_groups_by_city(self):
+        cursor = Mock()
+        cursor.fetchall.return_value = []
+        context = Mock()
+        context.__enter__ = Mock(return_value=cursor)
+        context.__exit__ = Mock(return_value=None)
+
+        with patch.object(queries, "get_cursor", return_value=context):
+            queries.get_map_summary(FilterParams(), group_by="city", limit=50)
+
+        sql = cursor.execute.call_args.args[0]
+        params = cursor.execute.call_args.args[1]
+        self.assertIn("'city' AS group_by", sql)
+        self.assertIn("GROUP BY cidade, estado, pais, latitude, longitude", sql)
+        self.assertEqual(params, [50])
+
+    def test_get_map_country_summary_groups_by_country(self):
+        cursor = Mock()
+        cursor.fetchall.return_value = []
+        context = Mock()
+        context.__enter__ = Mock(return_value=cursor)
+        context.__exit__ = Mock(return_value=None)
+
+        with patch.object(queries, "get_cursor", return_value=context):
+            queries.get_map_summary(FilterParams(), group_by="country", limit=25)
+
+        sql = cursor.execute.call_args.args[0]
+        params = cursor.execute.call_args.args[1]
+        self.assertIn("'country' AS group_by", sql)
+        self.assertIn("GROUP BY pais", sql)
+        self.assertEqual(params, [25])
+
     def test_outlier_query_supports_new_kinds(self):
         cases = {
             "beneficiario_mes": "ROW_NUMBER() OVER (PARTITION BY periodo",

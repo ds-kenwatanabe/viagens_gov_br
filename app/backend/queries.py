@@ -263,6 +263,73 @@ def get_map_clusters(filters: FilterParams, limit: int = 2000) -> list[dict]:
         return cursor.fetchall()
 
 
+def get_map_summary(filters: FilterParams, group_by: str = "city", limit: int = 1000) -> list[dict]:
+    if group_by == "country":
+        return _get_map_country_summary(filters, limit)
+    return _get_map_city_summary(filters, limit)
+
+
+def _get_map_city_summary(filters: FilterParams, limit: int) -> list[dict]:
+    where_sql, params = _build_where(filters)
+    params.append(limit)
+    with get_cursor() as cursor:
+        cursor.execute(
+            f"""
+            SELECT 'city' AS group_by,
+                   COALESCE(
+                       CONCAT_WS(', ', NULLIF(cidade, ''), NULLIF(estado, ''), NULLIF(pais, '')),
+                       'Nao informado'
+                   ) AS label,
+                   cidade,
+                   estado,
+                   pais,
+                   latitude::float AS latitude,
+                   longitude::float AS longitude,
+                   COUNT(*) AS quantidade,
+                   COALESCE(SUM(valor_total_viagem), 0) AS valor_total,
+                   AVG(confidence)::float AS confidence
+              FROM vw_mapa_viagens
+             {where_sql}
+               AND latitude IS NOT NULL
+               AND longitude IS NOT NULL
+             GROUP BY cidade, estado, pais, latitude, longitude
+             ORDER BY quantidade DESC, valor_total DESC
+             LIMIT %s
+            """,
+            params,
+        )
+        return cursor.fetchall()
+
+
+def _get_map_country_summary(filters: FilterParams, limit: int) -> list[dict]:
+    where_sql, params = _build_where(filters)
+    params.append(limit)
+    with get_cursor() as cursor:
+        cursor.execute(
+            f"""
+            SELECT 'country' AS group_by,
+                   COALESCE(NULLIF(pais, ''), 'Nao informado') AS label,
+                   NULL::text AS cidade,
+                   NULL::text AS estado,
+                   pais,
+                   AVG(latitude)::float AS latitude,
+                   AVG(longitude)::float AS longitude,
+                   COUNT(*) AS quantidade,
+                   COALESCE(SUM(valor_total_viagem), 0) AS valor_total,
+                   AVG(confidence)::float AS confidence
+              FROM vw_mapa_viagens
+             {where_sql}
+               AND latitude IS NOT NULL
+               AND longitude IS NOT NULL
+             GROUP BY pais
+             ORDER BY quantidade DESC, valor_total DESC
+             LIMIT %s
+            """,
+            params,
+        )
+        return cursor.fetchall()
+
+
 def get_trip_details(filters: FilterParams, limit: int = 100) -> list[dict]:
     where_sql, params = _build_where(filters)
     params.append(limit)

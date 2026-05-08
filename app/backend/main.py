@@ -10,6 +10,7 @@ from app.backend.queries import get_filter_options
 from app.backend.queries import get_cargo_distribution
 from app.backend.queries import get_kpis
 from app.backend.queries import get_map_points
+from app.backend.queries import get_map_summary
 from app.backend.queries import get_org_comparison
 from app.backend.queries import get_outliers
 from app.backend.queries import get_quality_report
@@ -23,6 +24,7 @@ from app.backend.schemas import FilterOptions
 from app.backend.schemas import FilterParams
 from app.backend.schemas import KpiSummary
 from app.backend.schemas import MapPoint
+from app.backend.schemas import MapSummaryPoint
 from app.backend.schemas import OutlierRow
 from app.backend.schemas import Option
 from app.backend.schemas import QualityReport
@@ -125,6 +127,15 @@ def map_points(
     filters: FilterParams = Depends(parse_filters),
 ) -> list[dict]:
     return get_map_points(filters, map_mode, limit)
+
+
+@app.get("/map/summary", response_model=list[MapSummaryPoint])
+def map_summary(
+    group_by: str = Query(default="city", pattern="^(city|country)$"),
+    limit: int = Query(default=1000, ge=1, le=5000),
+    filters: FilterParams = Depends(parse_filters),
+) -> list[dict]:
+    return get_map_summary(filters, group_by, limit)
 
 
 @app.get("/trips", response_model=list[TripDetail])
