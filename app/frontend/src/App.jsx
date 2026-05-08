@@ -25,6 +25,7 @@ const initialFilters = {
   data_fim: '2026-04-30',
   beneficiario: '',
   cargo: '',
+  motivo_contem: '',
   tipo_viagem: '',
 };
 

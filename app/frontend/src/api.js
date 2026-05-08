@@ -7,7 +7,7 @@ function buildQuery(filters = {}) {
     if (orgao) params.append('orgao', orgao);
   });
 
-  ['beneficiario', 'cargo', 'tipo_viagem', 'data_inicio', 'data_fim'].forEach((key) => {
+  ['beneficiario', 'cargo', 'motivo_contem', 'tipo_viagem', 'data_inicio', 'data_fim'].forEach((key) => {
     if (filters[key]) params.set(key, filters[key]);
   });
 

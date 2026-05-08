@@ -13,6 +13,7 @@ class FilterParams(BaseModel):
     orgao: list[str] = Field(default_factory=list)
     beneficiario: str | None = None
     cargo: str | None = None
+    motivo_contem: str | None = None
     tipo_viagem: str | None = None
     data_inicio: date | None = None
     data_fim: date | None = None

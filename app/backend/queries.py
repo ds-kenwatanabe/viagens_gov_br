@@ -519,6 +519,9 @@ def _build_where(
     if filters.cargo:
         clauses.append(f"{prefix}cargo_descricao ILIKE %s")
         params.append(f"%{filters.cargo}%")
+    if filters.motivo_contem:
+        clauses.append(f"{prefix}motivo ILIKE %s")
+        params.append(f"%{filters.motivo_contem}%")
     if filters.tipo_viagem:
         clauses.append(f"{prefix}tipo_viagem = %s")
         params.append(filters.tipo_viagem)

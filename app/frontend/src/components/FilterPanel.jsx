@@ -66,6 +66,16 @@ export default function FilterPanel({ filters, options, onChange }) {
         title="Cargo"
       />
 
+      <label>
+        Motivo contém
+        <input
+          type="search"
+          placeholder="evento, reunião, missão..."
+          value={filters.motivo_contem}
+          onChange={(event) => update({ motivo_contem: event.target.value })}
+        />
+      </label>
+
       <div className="orgao-list">
         <div className="filter-title">Órgãos</div>
         <button className="clear-button" type="button" onClick={() => update({ orgao: [] })}>
