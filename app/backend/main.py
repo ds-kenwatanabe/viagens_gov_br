@@ -4,7 +4,10 @@ from fastapi import Depends
 from fastapi import FastAPI
 from fastapi import Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 
+from app.backend.csv_export import csv_headers
+from app.backend.csv_export import rows_to_csv
 from app.backend.db import close_pool
 from app.backend.queries import get_filter_options
 from app.backend.queries import get_cargo_distribution
@@ -44,6 +47,36 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+TRIP_EXPORT_COLUMNS = [
+    "id",
+    "orgao_nome",
+    "beneficiario_nome",
+    "cargo_descricao",
+    "tipo_viagem",
+    "motivo",
+    "data_inicio_afastamento",
+    "data_fim_afastamento",
+    "valor_total_viagem",
+    "valor_total_diarias",
+    "valor_total_passagem",
+]
+
+MAP_EXPORT_COLUMNS = [
+    "group_by",
+    "label",
+    "cidade",
+    "estado",
+    "pais",
+    "latitude",
+    "longitude",
+    "quantidade",
+    "valor_total",
+    "confidence",
+]
+
+RANKING_EXPORT_COLUMNS = ["nome", "quantidade", "valor_total"]
 
 
 def parse_filters(
@@ -174,3 +207,48 @@ def quality(
     filters: FilterParams = Depends(parse_filters),
 ) -> dict:
     return get_quality_report(filters, limit)
+
+
+@app.get("/export/trips.csv")
+def export_trips_csv(
+    limit: int = Query(default=5000, ge=1, le=100000),
+    filters: FilterParams = Depends(parse_filters),
+) -> Response:
+    csv_content = rows_to_csv(get_trip_details(filters, limit), TRIP_EXPORT_COLUMNS)
+    return Response(
+        content=csv_content,
+        media_type="text/csv; charset=utf-8",
+        headers=csv_headers("trips.csv"),
+    )
+
+
+@app.get("/export/map.csv")
+def export_map_csv(
+    group_by: str = Query(default="city", pattern="^(city|country)$"),
+    limit: int = Query(default=5000, ge=1, le=100000),
+    filters: FilterParams = Depends(parse_filters),
+) -> Response:
+    csv_content = rows_to_csv(get_map_summary(filters, group_by, limit), MAP_EXPORT_COLUMNS)
+    return Response(
+        content=csv_content,
+        media_type="text/csv; charset=utf-8",
+        headers=csv_headers("map.csv"),
+    )
+
+
+@app.get("/export/ranking.csv")
+def export_ranking_csv(
+    dimension: RankingDimension = Query(default="orgaos"),
+    order_by: str = Query(default="valor", pattern="^(valor|quantidade)$"),
+    limit: int = Query(default=5000, ge=1, le=100000),
+    filters: FilterParams = Depends(parse_filters),
+) -> Response:
+    csv_content = rows_to_csv(
+        get_ranking(dimension, filters, limit, order_by),
+        RANKING_EXPORT_COLUMNS,
+    )
+    return Response(
+        content=csv_content,
+        media_type="text/csv; charset=utf-8",
+        headers=csv_headers("ranking.csv"),
+    )
