@@ -11,6 +11,7 @@ import {
   getTimeSeries,
   getTrips,
 } from './api.js';
+import CsvExportButton from './components/CsvExportButton.jsx';
 import FilterPanel from './components/FilterPanel.jsx';
 import BeneficiariosPage from './pages/BeneficiariosPage.jsx';
 import MapPage from './pages/MapPage.jsx';
@@ -138,7 +139,17 @@ export default function App() {
             <h2>{pageTitle}</h2>
             <p>{filters.data_inicio} a {filters.data_fim}</p>
           </div>
-          {loading && <span className="status-pill">Atualizando</span>}
+          <div className="page-actions">
+            <CsvExportButton
+              filters={filters}
+              kind="trips"
+              options={{ limit: 100000 }}
+              title="Exportar viagens filtradas em CSV"
+            >
+              Viagens CSV
+            </CsvExportButton>
+            {loading && <span className="status-pill">Atualizando</span>}
+          </div>
         </div>
 
         {error && <div className="error-banner">{error}</div>}
@@ -156,6 +167,7 @@ export default function App() {
         )}
         {activePage === 'beneficiarios' && (
           <BeneficiariosPage
+            filters={filters}
             rankings={data.rankings}
             cargoDistribution={data.cargoDistribution}
             trips={data.trips}
@@ -163,6 +175,7 @@ export default function App() {
         )}
         {activePage === 'mapa' && (
           <MapPage
+            filters={filters}
             mapMode={mapMode}
             points={visibleMapPoints}
             mapRegion={mapRegion}

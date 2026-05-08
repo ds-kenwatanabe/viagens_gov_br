@@ -87,3 +87,22 @@ export function getQualityReport(filters, limit = 20) {
   const sep = query ? '&' : '?';
   return request(`/quality${query ? `?${query}` : ''}${sep}limit=${limit}`);
 }
+
+export function getCsvExportUrl(kind, filters = {}, options = {}) {
+  const query = buildQuery(filters);
+  const params = new URLSearchParams(query);
+  const paths = {
+    trips: '/export/trips.csv',
+    map: '/export/map.csv',
+    ranking: '/export/ranking.csv',
+    hierarchy: '/export/orgao-beneficiario-viagem.csv',
+  };
+
+  Object.entries(options).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      params.set(key, String(value));
+    }
+  });
+
+  return `${API_BASE_URL}${paths[kind]}${params.toString() ? `?${params.toString()}` : ''}`;
+}

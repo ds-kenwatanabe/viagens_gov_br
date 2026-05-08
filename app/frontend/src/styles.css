@@ -239,6 +239,15 @@ select {
   margin-bottom: 20px;
 }
 
+.page-actions,
+.panel-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .page-header h2 {
   font-size: 28px;
   letter-spacing: 0;
@@ -251,6 +260,35 @@ select {
   color: #1d4ed8;
   font-size: 13px;
   padding: 6px 10px;
+}
+
+.export-button {
+  align-items: center;
+  background: #0f766e;
+  border: 1px solid #0f766e;
+  border-radius: 6px;
+  color: #fff;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 6px;
+  min-height: 32px;
+  padding: 6px 9px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.export-button:hover {
+  background: #115e59;
+  border-color: #115e59;
+}
+
+.export-icon {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  font-size: 10px;
+  line-height: 1;
+  padding: 3px 4px;
 }
 
 .error-banner {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { getRanking, getTrips } from '../api.js';
 import BarChart from '../components/BarChart.jsx';
+import CsvExportButton from '../components/CsvExportButton.jsx';
 import ErrorBoundary from '../components/ErrorBoundary.jsx';
 import RankingTable from '../components/RankingTable.jsx';
 import TripDetailDrawer from '../components/TripDetailDrawer.jsx';
@@ -73,7 +74,17 @@ export default function OrgaosPage({ filters, rankings, comparison, trips }) {
     <>
       <section className="analytics-grid">
         <div className="panel">
-          <div className="panel-header"><h3>Ranking por valor</h3></div>
+          <div className="panel-header">
+            <h3>Ranking por valor</h3>
+            <CsvExportButton
+              filters={filters}
+              kind="ranking"
+              options={{ dimension: 'orgaos', order_by: 'valor', limit: 100000 }}
+              title="Exportar ranking de órgãos por valor"
+            >
+              CSV
+            </CsvExportButton>
+          </div>
           <ErrorBoundary fallback="Falha ao carregar o ranking por valor." resetKey={rankings.orgaosValor?.length}>
             <RankingTable
               rows={rankings.orgaosValor || []}
@@ -83,7 +94,17 @@ export default function OrgaosPage({ filters, rankings, comparison, trips }) {
           </ErrorBoundary>
         </div>
         <div className="panel">
-          <div className="panel-header"><h3>Ranking por quantidade</h3></div>
+          <div className="panel-header">
+            <h3>Ranking por quantidade</h3>
+            <CsvExportButton
+              filters={filters}
+              kind="ranking"
+              options={{ dimension: 'orgaos', order_by: 'quantidade', limit: 100000 }}
+              title="Exportar ranking de órgãos por quantidade"
+            >
+              CSV
+            </CsvExportButton>
+          </div>
           <ErrorBoundary fallback="Falha ao carregar o ranking por quantidade." resetKey={rankings.orgaosQuantidade?.length}>
             <RankingTable
               rows={rankings.orgaosQuantidade || []}
@@ -101,7 +122,17 @@ export default function OrgaosPage({ filters, rankings, comparison, trips }) {
         <div className="panel map-panel">
           <div className="panel-header">
             <h3>Órgão → beneficiário → viagem</h3>
-            {loadingDrill && <span className="status-pill">Atualizando</span>}
+            <div className="panel-actions">
+              <CsvExportButton
+                filters={selectedOrg ? { ...filters, orgao_nome: selectedOrg.nome } : filters}
+                kind="hierarchy"
+                options={{ limit: 100000 }}
+                title="Exportar órgão, beneficiário e viagem em CSV"
+              >
+                CSV
+              </CsvExportButton>
+              {loadingDrill && <span className="status-pill">Atualizando</span>}
+            </div>
           </div>
           <div className="drill-grid">
             <div>
